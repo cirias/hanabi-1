@@ -17,8 +17,8 @@ def flatten(xss):
 ################################################################################
 # Constants
 ################################################################################
-MAX_FUSES = 4
 MAX_TOKENS = 8
+MAX_FUSES = 4
 NUM_NUMBERS = 5
 HAND_SIZE = 5
 CARD_COUNTS = [3, 2, 2, 2, 1]
@@ -105,8 +105,8 @@ def sample_to_card(sample):
 # Discarded and played cards.
 ################################################################################
 CARDS = [Card(c, n) for c in Colors.COLORS for n in range(1, NUM_NUMBERS + 1)]
-DISCARDED_SPACE = gym.spaces.MultiDiscrete([[0, 3] * len(CARDS)])
-PLAYED_SPACE = DISCARDED_SPACE
+DISCARDED_CARDS_SPACE = gym.spaces.MultiDiscrete([[0, 3] * len(CARDS)])
+PLAYED_CARDS_SPACE = DISCARDED_CARDS_SPACE
 
 def cards_to_sample(cards):
     """
@@ -198,6 +198,109 @@ def move_to_sample(move):
 def sample_to_move(sample):
     assert (0 <= sample <= len(MOVES))
     return MOVES[sample]
+
+################################################################################
+# Game state
+################################################################################
+class GameState(object):
+    def __init__(self):
+        self.num_tokens = MAX_TOKENS
+        self.num_fuses = MAX_FUSES
+
+        self.discarded_cards = []
+        self.played_cards = []
+
+        self.ai_hand = tuple()
+        self.ai_info = tuple()
+
+        self.player_hand = tuple()
+        self.player_info = tuple()
+
+    def __repr__(self):
+        return ("num_tokens:      {}\n".format(self.num_tokens) +
+                "num_fuses:       {}\n".format(self.num_fuses) +
+                "discarded_cards: {}\n".format(self.discarded_cards) +
+                "played_cards:    {}\n".format(self.played_cards) +
+                "ai_hand:         {}\n".format(self.ai_hand) +
+                "ai_info:         {}\n".format(self.ai_info) +
+                "player_hand:     {}\n".format(self.player_hand) +
+                "player_info:     {}\n".format(self.player_info))
+
+GAME_STATE_SPACE = gym.spaces.Tuple((
+    gym.spaces.Discrete(MAX_TOKENS),                   # Tokens
+    gym.spaces.Discrete(MAX_FUSES),                    # Fuses
+    DISCARDED_CARDS_SPACE,                             # Discarded cards
+    PLAYED_CARDS_SPACE,                                # Played cards
+    gym.spaces.Tuple([CARD_SPACE] * HAND_SIZE),        # AI cards
+    gym.spaces.Tuple([INFORMATION_SPACE] * HAND_SIZE), # AI info
+    gym.spaces.Tuple([INFORMATION_SPACE] * HAND_SIZE)  # Player info
+))
+
+def game_state_to_sample(game_state):
+    """
+    >>> game_state = GameState()
+    >>> game_state.ai_hand = [Card(Colors.WHITE, 1)] * 5
+    >>> game_state.ai_info = [Information(None, None)] * 5
+    >>> game_state.player_hand = [Card(Colors.WHITE, 1)] * 5
+    >>> game_state.player_info = [Information(None, None)] * 5
+    >>> game_state_to_sample(game_state) # doctest: +NORMALIZE_WHITESPACE
+    (7,
+     3,
+     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+     ([0, 0], [0, 0], [0, 0], [0, 0], [0, 0]),
+     ([5, 5], [5, 5], [5, 5], [5, 5], [5, 5]),
+     ([5, 5], [5, 5], [5, 5], [5, 5], [5, 5]))
+    """
+    return (
+        game_state.num_tokens - 1,
+        game_state.num_fuses - 1,
+        cards_to_sample(game_state.discarded_cards),
+        cards_to_sample(game_state.played_cards),
+        tuple(card_to_sample(card) for card in game_state.ai_hand),
+        tuple(information_to_sample(info) for info in game_state.ai_info),
+        tuple(information_to_sample(info) for info in game_state.player_info),
+    )
+
+def sample_to_game_state(sample):
+    """
+    >>> sample = (7, 3,
+    ...           [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    ...           [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    ...           ([0,0], [0,0], [0,0], [0,0], [0,0]),
+    ...           ([5,5], [5,5], [5,5], [5,5], [5,5]),
+    ...           ([5,5], [5,5], [5,5], [5,5], [5,5]))
+    >>> sample_to_game_state(sample) # doctest: +NORMALIZE_WHITESPACE
+    num_tokens:      8
+    num_fuses:       4
+    discarded_cards: []
+    played_cards:    []
+    ai_hand:         (Card(color='white', number=1),
+                      Card(color='white', number=1),
+                      Card(color='white', number=1),
+                      Card(color='white', number=1),
+                      Card(color='white', number=1))
+    ai_info:         (Information(color=None, number=None),
+                      Information(color=None, number=None),
+                      Information(color=None, number=None),
+                      Information(color=None, number=None),
+                      Information(color=None, number=None))
+    player_hand:     ()
+    player_info:     (Information(color=None, number=None),
+                      Information(color=None, number=None),
+                      Information(color=None, number=None),
+                      Information(color=None, number=None),
+                      Information(color=None, number=None))
+    """
+    game_state = GameState()
+    game_state.num_tokens = sample[0] + 1
+    game_state.num_fuses = sample[1] + 1
+    game_state.discarded_cards = sample_to_cards(sample[2])
+    game_state.played_cards = sample_to_cards(sample[3])
+    game_state.ai_hand = tuple(sample_to_card(s) for s in sample[4])
+    game_state.ai_info = tuple(sample_to_information(i) for i in sample[5])
+    game_state.player_info = tuple(sample_to_information(i) for i in sample[6])
+    return game_state
 
 ################################################################################
 # Environment
