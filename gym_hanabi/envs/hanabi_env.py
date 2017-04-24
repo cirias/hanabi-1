@@ -1,6 +1,8 @@
 import collections
 import gym
 import gym.spaces
+import gym.utils
+import gym.utils.seeding
 
 ################################################################################
 # Helper functions
@@ -207,24 +209,27 @@ class GameState(object):
         self.num_tokens = MAX_TOKENS
         self.num_fuses = MAX_FUSES
 
+        self.deck = [card for color in Colors.COLORS
+                          for n, count in enumerate(CARD_COUNTS)
+                          for card in [Card(color, n)] * count]
         self.discarded_cards = []
         self.played_cards = []
 
         self.ai_hand = tuple()
         self.ai_info = tuple()
-
         self.player_hand = tuple()
         self.player_info = tuple()
 
     def __repr__(self):
         return ("num_tokens:      {}\n".format(self.num_tokens) +
                 "num_fuses:       {}\n".format(self.num_fuses) +
+                "deck:            {}\n".format(self.deck) +
                 "discarded_cards: {}\n".format(self.discarded_cards) +
                 "played_cards:    {}\n".format(self.played_cards) +
                 "ai_hand:         {}\n".format(self.ai_hand) +
                 "ai_info:         {}\n".format(self.ai_info) +
                 "player_hand:     {}\n".format(self.player_hand) +
-                "player_info:     {}\n".format(self.player_info))
+                "player_info:     {}".format(self.player_info))
 
 GAME_STATE_SPACE = gym.spaces.Tuple((
     gym.spaces.Discrete(MAX_TOKENS),                   # Tokens
@@ -273,6 +278,31 @@ def sample_to_game_state(sample):
     >>> sample_to_game_state(sample) # doctest: +NORMALIZE_WHITESPACE
     num_tokens:      8
     num_fuses:       4
+    deck: [Card(color='white', number=0), Card(color='white', number=0),
+           Card(color='white', number=0), Card(color='white', number=1),
+           Card(color='white', number=1), Card(color='white', number=2),
+           Card(color='white', number=2), Card(color='white', number=3),
+           Card(color='white', number=3), Card(color='white', number=4),
+           Card(color='yellow', number=0), Card(color='yellow', number=0),
+           Card(color='yellow', number=0), Card(color='yellow', number=1),
+           Card(color='yellow', number=1), Card(color='yellow', number=2),
+           Card(color='yellow', number=2), Card(color='yellow', number=3),
+           Card(color='yellow', number=3), Card(color='yellow', number=4),
+           Card(color='green', number=0), Card(color='green', number=0),
+           Card(color='green', number=0), Card(color='green', number=1),
+           Card(color='green', number=1), Card(color='green', number=2),
+           Card(color='green', number=2), Card(color='green', number=3),
+           Card(color='green', number=3), Card(color='green', number=4),
+           Card(color='blue', number=0), Card(color='blue', number=0),
+           Card(color='blue', number=0), Card(color='blue', number=1),
+           Card(color='blue', number=1), Card(color='blue', number=2),
+           Card(color='blue', number=2), Card(color='blue', number=3),
+           Card(color='blue', number=3), Card(color='blue', number=4),
+           Card(color='red', number=0), Card(color='red', number=0),
+           Card(color='red', number=0), Card(color='red', number=1),
+           Card(color='red', number=1), Card(color='red', number=2),
+           Card(color='red', number=2), Card(color='red', number=3),
+           Card(color='red', number=3), Card(color='red', number=4)]
     discarded_cards: []
     played_cards:    []
     ai_hand:         (Card(color='white', number=1),
@@ -309,33 +339,33 @@ class HanabiEnv(gym.Env):
     metadata = {"render.modes": ["human"]}
 
     def __init__(self):
-        # TODO: Initialize the following:
-        #   - action_space:      The Space object corresponding to valid actions
-        #   - observation_space: The Space object corresponding to valid
-        #                        observations
-        #   - reward_range:      A tuple corresponding to the min and max
-        #                        possible rewards
-        pass
-
+        self._seed()
+        self.action_space = MOVE_SPACE
+        self.observation_space = GAME_STATE_SPACE
+        self.reward_range = (0, 1)
 
     def _step(self, action):
         # TODO: Return (observation, reward, done, info).
-        pass
+        return (None, 0, False, None)
 
     def _reset(self):
-        # TODO: Reset game and return initial observation.
-        pass
+        self.game_state = GameState()
+        self.np_random.shuffle(self.game_state.deck)
+        self.ai_hand = [self.game_state.deck.pop() for _ in range(HAND_SIZE)]
+        self.ai_info = [Information(None, None) for _ in range(HAND_SIZE)]
+        self.player_hand = [self.game_state.deck.pop() for _ in range(HAND_SIZE)]
+        self.player_info = [Information(None, None) for _ in range(HAND_SIZE)]
+        return game_state_to_sample(self.game_state)
 
     def _render(self, mode='human', close=False):
         if mode == "human":
-            # TODO: Draw the state of the game.
-            pass
+            print(self.game_state)
         else:
             super(HanabiEnv, self).render(mode=mode)
 
-    def _seed(self, seed):
-        # TODO: Figure out what this method should do.
-        pass
+    def _seed(self, seed=None):
+        self.np_random, seed = gym.utils.seeding.np_random(seed)
+        return [seed]
 
 if __name__ == "__main__":
     import doctest
