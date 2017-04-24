@@ -3,6 +3,7 @@ import gym
 import gym.spaces
 import gym.utils
 import gym.utils.seeding
+import termcolor
 
 ################################################################################
 # Helper functions
@@ -103,6 +104,10 @@ def sample_to_card(sample):
     assert (len(sample) == 2)
     return Card(sample_to_color(sample[0]), sample_to_number(sample[1]))
 
+def render_card(card):
+    s = "{}{}".format(card.number, card.color[0].upper())
+    return termcolor.colored(s, card.color, attrs=["bold"])
+
 ################################################################################
 # Discarded and played cards.
 ################################################################################
@@ -173,6 +178,11 @@ def sample_to_information(sample):
     number = None if n == NUM_NUMBERS else sample_to_number(n)
     return Information(color, number)
 
+def render_information(info):
+    number = info.number or "?"
+    color = info.color[0].upper() if info.color else "?"
+    return "{}{}".format(number, color)
+
 ################################################################################
 # Moves
 ################################################################################
@@ -210,10 +220,10 @@ class GameState(object):
         self.num_fuses = MAX_FUSES
 
         self.deck = [card for color in Colors.COLORS
-                          for n, count in enumerate(CARD_COUNTS)
+                          for n, count in enumerate(CARD_COUNTS, 1)
                           for card in [Card(color, n)] * count]
         self.discarded_cards = []
-        self.played_cards = []
+        self.played_cards = dict() # color -> int
 
         self.ai_hand = tuple()
         self.ai_info = tuple()
@@ -257,11 +267,13 @@ def game_state_to_sample(game_state):
      ([5, 5], [5, 5], [5, 5], [5, 5], [5, 5]),
      ([5, 5], [5, 5], [5, 5], [5, 5], [5, 5]))
     """
+    played_cards = [card for (color, x) in game_state.played_cards.items()
+                         for card in [Card(color, y) for y in range(1, x + 1)]]
     return (
         game_state.num_tokens - 1,
         game_state.num_fuses - 1,
         cards_to_sample(game_state.discarded_cards),
-        cards_to_sample(game_state.played_cards),
+        cards_to_sample(played_cards),
         tuple(card_to_sample(card) for card in game_state.ai_hand),
         tuple(information_to_sample(info) for info in game_state.ai_info),
         tuple(information_to_sample(info) for info in game_state.player_info),
@@ -304,7 +316,7 @@ def sample_to_game_state(sample):
            Card(color='red', number=2), Card(color='red', number=3),
            Card(color='red', number=3), Card(color='red', number=4)]
     discarded_cards: []
-    played_cards:    []
+    played_cards:    {}
     ai_hand:         (Card(color='white', number=1),
                       Card(color='white', number=1),
                       Card(color='white', number=1),
@@ -332,6 +344,31 @@ def sample_to_game_state(sample):
     game_state.player_info = tuple(sample_to_information(i) for i in sample[6])
     return game_state
 
+def render_game_state(gs):
+    def render_cards(cards):
+        return " ".join(render_card(card) for card in cards)
+
+    def render_infos(infos):
+        return " ".join(render_information(info) for info in infos)
+
+    played_cards = []
+    for c in Colors.COLORS:
+        if c in gs.played_cards:
+            played_cards.append(render_card(Card(c, gs.played_cards[c])))
+        else:
+            played_cards.append(termcolor.colored("--", c))
+
+    return ("deck:      {}\n".format(len(gs.deck)) +
+            "tokens:    {}/{}\n".format(gs.num_tokens, MAX_TOKENS) +
+            "fuses:     {}/{}\n".format(gs.num_fuses, MAX_FUSES) +
+            "discarded: {}\n".format(render_cards(gs.discarded_cards)) +
+            "played:    {}\n".format(" ".join(played_cards)) +
+            "-------------------------\n" +
+            "AI hand:   {}\n".format(render_cards(gs.ai_hand)) +
+            "AI info:   {}\n".format(render_infos(gs.ai_info)) +
+            "hand:      {}\n".format(render_cards(gs.player_hand)) +
+            "info:      {}".format(render_infos(gs.player_info)))
+
 ################################################################################
 # Environment
 ################################################################################
@@ -349,17 +386,18 @@ class HanabiEnv(gym.Env):
         return (None, 0, False, None)
 
     def _reset(self):
-        self.game_state = GameState()
-        self.np_random.shuffle(self.game_state.deck)
-        self.ai_hand = [self.game_state.deck.pop() for _ in range(HAND_SIZE)]
-        self.ai_info = [Information(None, None) for _ in range(HAND_SIZE)]
-        self.player_hand = [self.game_state.deck.pop() for _ in range(HAND_SIZE)]
-        self.player_info = [Information(None, None) for _ in range(HAND_SIZE)]
+        gs = GameState()
+        self.np_random.shuffle(gs.deck)
+        gs.ai_hand = [gs.deck.pop() for _ in range(HAND_SIZE)]
+        gs.ai_info = [Information(None, None) for _ in range(HAND_SIZE)]
+        gs.player_hand = [gs.deck.pop() for _ in range(HAND_SIZE)]
+        gs.player_info = [Information(None, None) for _ in range(HAND_SIZE)]
+        self.game_state = gs
         return game_state_to_sample(self.game_state)
 
     def _render(self, mode='human', close=False):
         if mode == "human":
-            print(self.game_state)
+            print(render_game_state(self.game_state))
         else:
             super(HanabiEnv, self).render(mode=mode)
 
