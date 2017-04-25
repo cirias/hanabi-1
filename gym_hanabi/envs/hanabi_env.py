@@ -276,7 +276,7 @@ class GameState(object):
         self.ai = Hand([None] * HAND_SIZE, [None] * HAND_SIZE)
         self.player = Hand([None] * HAND_SIZE, [None] * HAND_SIZE)
         self.num_turns_left = -1
-        self.turn = True
+        self.player_turn = True
 
     def __repr__(self):
         return ("num_tokens:      {}\n".format(self.num_tokens) +
@@ -328,17 +328,17 @@ class GameState(object):
     def play_move(self, move):
         assert self.num_turns_left != 0
         if isinstance(move, InformColorMove) or isinstance(move, InformNumberMove):
-            who = self.ai if self.turn else self.player
+            who = self.ai if self.player_turn else self.player
             self.play_information_move(who, move)
         elif isinstance(move, DiscardMove):
-            who = self.player if self.turn else self.ai
+            who = self.player if self.player_turn else self.ai
             card = self.remove_card(who, move.index)
             self.discarded_cards.append(card)
             if self.num_tokens < MAX_TOKENS:
                 self.num_tokens += 1
             self.deal_card(who)
         elif isinstance(move, PlayMove):
-            who = self.player if self.turn else self.ai
+            who = self.player if self.player_turn else self.ai
             card = self.remove_card(who, move.index)
             if card.number == self.played_cards[card.color] + 1:
                 self.played_cards[card.color] += 1
@@ -364,7 +364,7 @@ class GameState(object):
             else:
                 self.num_turns_left -= 1
 
-        self.turn = not self.turn
+        self.player_turn = not self.player_turn
 
 GAME_STATE_SPACE = gym.spaces.Tuple((
     gym.spaces.Discrete(MAX_TOKENS),                   # Tokens
@@ -394,7 +394,7 @@ def game_state_to_sample(game_state):
     """
     played_cards = [card for (color, x) in game_state.played_cards.items()
                          for card in [Card(color, y) for y in range(1, x + 1)]]
-    player = game_state.player if game_state.turn else game_state.ai
+    player = game_state.player if game_state.player_turn else game_state.ai
     return (
         game_state.num_tokens - 1,
         game_state.num_fuses - 1,
@@ -421,16 +421,19 @@ def render_game_state(gs):
         else:
             played_cards.append(termcolor.colored("--", c))
 
-    return ("deck:      {}\n".format(len(gs.deck)) +
-            "tokens:    {}/{}\n".format(gs.num_tokens, MAX_TOKENS) +
-            "fuses:     {}/{}\n".format(gs.num_fuses, MAX_FUSES) +
-            "discarded: {}\n".format(render_cards(gs.discarded_cards)) +
-            "played:    {}\n".format(" ".join(played_cards)) +
+    them = gs.ai if gs.player_turn else gs.player
+    you = gs.player if gs.player_turn else gs.ai
+
+    return ("deck:       {}\n".format(len(gs.deck)) +
+            "tokens:     {}/{}\n".format(gs.num_tokens, MAX_TOKENS) +
+            "fuses:      {}/{}\n".format(gs.num_fuses, MAX_FUSES) +
+            "discarded:  {}\n".format(render_cards(gs.discarded_cards)) +
+            "played:     {}\n".format(" ".join(played_cards)) +
             "-------------------------\n" +
-            "AI hand:   {}\n".format(render_cards(gs.ai.cards, show=gs.turn)) +
-            "AI info:   {}\n".format(render_infos(gs.ai.info)) +
-            "hand:      {}\n".format(render_cards(gs.player.cards, show=not gs.turn)) +
-            "info:      {}".format(render_infos(gs.player.info)))
+            "their hand: {}\n".format(render_cards(them.cards, show=True)) +
+            "their info: {}\n".format(render_infos(them.info)) +
+            "your hand:  {}\n".format(render_cards(you.cards, show=False)) +
+            "your info:  {}".format(render_infos(you.info)))
 
 ################################################################################
 # Environment
@@ -461,26 +464,7 @@ class HanabiEnv(gym.Env):
         self.ai_policy = ai_policy
 
     def _step(self, action):
-        move = sample_to_move(action)
-        try:
-            reward, done = self.play_move(move)
-            if not done:
-                observation = game_state_to_sample(self.game_state)
-                ai_move = sample_to_move(self.ai_policy(observation))
-                ai_reward, done = self.play_move(ai_move)
-                reward += ai_reward
-            # Return (observation, reward, done, info).
-            return (game_state_to_sample(self.game_state),
-                    reward,
-                    done,
-                    {'state': self.game_state},
-                    )
-        except ValueError as e:
-            # TODO: Log this instead of printing it.
-            print(e)
-            # Final reward of 0 if we break the rules.
-            reward = -1 * self.game_state.current_reward()
-            return (None, reward, True, self.game_state)
+        raise NotImplementedError()
 
     def _reset(self):
         gs = GameState()

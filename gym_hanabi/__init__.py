@@ -1,6 +1,11 @@
 from gym.envs.registration import register
 
 register(
-    id='Hanabi-v0',
-    entry_point='gym_hanabi.envs:HanabiEnv',
+    id='HanabiSelf-v0',
+    entry_point='gym_hanabi.envs:HanabiSelfEnv',
+)
+
+register(
+    id='HanabiAi-v0',
+    entry_point='gym_hanabi.envs:HanabiAiEnv',
 )

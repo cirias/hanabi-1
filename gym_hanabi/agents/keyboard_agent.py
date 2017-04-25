@@ -52,13 +52,17 @@ def act():
         print(usage())
         return act()
 
-def main():
-    env = gym.make('Hanabi-v0')
+def main(env_id):
+    env = gym.make(env_id)
     observation = env.reset()
     done = False
     while not done:
         env.render()
         observation, reward, done, info = env.step(act())
+        print(info["move"])
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) != 2:
+        print("usage: python keyboard_agent.py [HanabiSelf-v0|HanabiAi-v0]")
+        sys.exit(1)
+    main(sys.argv[1])
