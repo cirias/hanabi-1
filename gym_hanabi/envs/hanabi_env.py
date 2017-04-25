@@ -41,16 +41,16 @@ COLOR_SPACE = gym.spaces.Discrete(len(Colors.COLORS))
 
 def color_to_sample(color):
     """
-    >>> color_to_sample(Colors.WHITE)
-    0
+    >>> [color_to_sample(c) for c in Colors.COLORS]
+    [0, 1, 2, 3, 4]
     """
     assert (color in Colors.COLORS)
     return Colors.COLORS.index(color)
 
 def sample_to_color(sample):
     """
-    >>> sample_to_color(4)
-    'red'
+    >>> [sample_to_color(s) for s in [0, 1, 2, 3, 4]]
+    ['white', 'yellow', 'green', 'blue', 'red']
     """
     assert (0 <= sample <= len(Colors.COLORS))
     return Colors.COLORS[sample]
@@ -62,18 +62,18 @@ NUMBER_SPACE = gym.spaces.Discrete(NUM_NUMBERS)
 
 def number_to_sample(number):
     """
-    >>> number_to_sample(2)
-    1
+    >>> [number_to_sample(x) for x in [1, 2, 3, 4, 5]]
+    [0, 1, 2, 3, 4]
     """
     assert 1 <= number <= NUM_NUMBERS
     return number - 1
 
 def sample_to_number(sample):
     """
-    >>> sample_to_number(1)
-    2
+    >>> [sample_to_number(s) for s in [0, 1, 2, 3, 4]]
+    [1, 2, 3, 4, 5]
     """
-    assert 0 <= sample <= (NUM_NUMBERS - 1)
+    assert 0 <= sample < NUM_NUMBERS
     return sample + 1
 
 ################################################################################
@@ -81,30 +81,43 @@ def sample_to_number(sample):
 ################################################################################
 Card = collections.namedtuple('Card', ['color', 'number'])
 CARD_SPACE = gym.spaces.MultiDiscrete([
-    [0, len(Colors.COLORS) - 1], # Color
-    [0, NUM_NUMBERS - 1]         # Number
+    [0, len(Colors.COLORS)], # Color
+    [0, NUM_NUMBERS]         # Number
 ])
 
 def card_to_sample(card):
     """
-    >>> card_to_sample(Card(Colors.WHITE, 1))
-    [0, 0]
-    >>> card_to_sample(Card(Colors.BLUE, 5))
-    [3, 4]
+    >>> cards = [Card(Colors.WHITE, x) for x in [1, 2, 3, 4, 5]]
+    >>> [card_to_sample(card) for card in cards]
+    [[0, 0], [0, 1], [0, 2], [0, 3], [0, 4]]
+    >>> cards = [Card(Colors.RED, x) for x in [1, 2, 3, 4, 5]]
+    >>> [card_to_sample(card) for card in cards]
+    [[4, 0], [4, 1], [4, 2], [4, 3], [4, 4]]
+    >>> card_to_sample(None)
+    [5, 5]
     """
+    if card is None:
+        return [len(Colors.COLORS), NUM_NUMBERS]
     return [color_to_sample(card.color), number_to_sample(card.number)]
 
 def sample_to_card(sample):
     """
     >>> sample_to_card([0, 0])
     Card(color='white', number=1)
-    >>> sample_to_card([3, 4])
-    Card(color='blue', number=5)
+    >>> sample_to_card([0, 1])
+    Card(color='white', number=2)
+    >>> sample_to_card([4, 4])
+    Card(color='red', number=5)
+    >>> sample_to_card([5, 5])
     """
-    assert (len(sample) == 2)
+    assert len(sample) == 2
+    if sample == card_to_sample(None):
+        return None
     return Card(sample_to_color(sample[0]), sample_to_number(sample[1]))
 
 def render_card(card):
+    if card is None:
+        return "  "
     s = "{}{}".format(card.number, card.color[0].upper())
     return termcolor.colored(s, card.color, attrs=["bold"])
 
@@ -121,7 +134,7 @@ def cards_to_sample(cards):
     >>> cards_to_sample(cards)
     [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0]
     """
-    assert (all(card in CARDS for card in CARDS))
+    assert all(card in CARDS for card in CARDS)
     return [cards.count(card) for card in CARDS]
 
 def sample_to_cards(sample):
@@ -132,7 +145,7 @@ def sample_to_cards(sample):
      Card(color='red', number=2),
      Card(color='red', number=2)]
     """
-    assert (len(sample) == len(CARDS))
+    assert len(sample) == len(CARDS)
     return flatten([card] * count for (card, count) in zip(CARDS, sample))
 
 ################################################################################
@@ -140,42 +153,48 @@ def sample_to_cards(sample):
 ################################################################################
 Information = collections.namedtuple('Information', ['color', 'number'])
 INFORMATION_SPACE = gym.spaces.MultiDiscrete([
-    [0, len(Colors.COLORS)], # Color
-    [0, NUM_NUMBERS]         # Number
+    [0, len(Colors.COLORS) + 1], # Color
+    [0, NUM_NUMBERS + 1]         # Number
 ])
 
 def information_to_sample(info):
     """
-    >>> information_to_sample(Information(Colors.WHITE, 4))
-    [0, 3]
-    >>> information_to_sample(Information(None, 4))
-    [5, 3]
+    >>> information_to_sample(Information(Colors.WHITE, 1))
+    [0, 0]
+    >>> information_to_sample(Information(Colors.RED, 5))
+    [4, 4]
+    >>> information_to_sample(Information(None, 1))
+    [5, 0]
     >>> information_to_sample(Information(Colors.WHITE, None))
     [0, 5]
     >>> information_to_sample(Information(None, None))
     [5, 5]
+    >>> information_to_sample(None)
+    [6, 6]
     """
-    color = info.color
-    number = info.number
-    color_sample = color_to_sample(color) if color else len(Colors.COLORS)
-    number_sample = number_to_sample(number) if number else NUM_NUMBERS
-    return [color_sample, number_sample]
+    if info is None:
+        return [len(Colors.COLORS) + 1, NUM_NUMBERS + 1]
+    return [color_to_sample(info.color) if info.color else len(Colors.COLORS),
+            number_to_sample(info.number) if info.number else NUM_NUMBERS]
 
-def sample_to_information(sample):
+def sample_to_information(s):
     """
-    >>> sample_to_information([0, 3])
-    Information(color='white', number=4)
-    >>> sample_to_information([5, 3])
-    Information(color=None, number=4)
+    >>> sample_to_information([0, 0])
+    Information(color='white', number=1)
+    >>> sample_to_information([4, 4])
+    Information(color='red', number=5)
+    >>> sample_to_information([5, 0])
+    Information(color=None, number=1)
     >>> sample_to_information([0, 5])
     Information(color='white', number=None)
     >>> sample_to_information([5, 5])
     Information(color=None, number=None)
+    >>> sample_to_information([6, 6])
     """
-    c = sample[0]
-    n = sample[1]
-    color = None if c == len(Colors.COLORS) else sample_to_color(c)
-    number = None if n == NUM_NUMBERS else sample_to_number(n)
+    if s == information_to_sample(None):
+        return None
+    color = None if s[0] == len(Colors.COLORS) else sample_to_color(s[0])
+    number = None if s[1] == NUM_NUMBERS else sample_to_number(s[1])
     return Information(color, number)
 
 def render_information(info):
@@ -201,15 +220,46 @@ def move_to_sample(move):
     """
     >>> move_to_sample(InformColorMove(Colors.WHITE))
     0
-    >>> move_to_sample(InformNumberMove(4))
-    8
+    >>> move_to_sample(InformNumberMove(1))
+    5
+    >>> move_to_sample(DiscardMove(0))
+    10
+    >>> move_to_sample(PlayMove(0))
+    15
     """
-    assert (move in MOVES)
-    return MOVES.index(move)
+    offsets = [0, len(Colors.COLORS), NUM_NUMBERS, HAND_SIZE]
+    if isinstance(move, InformColorMove):
+        return sum(offsets[:1]) + Colors.COLORS.index(move.color)
+    elif isinstance(move, InformNumberMove):
+        return sum(offsets[:2]) + range(1, NUM_NUMBERS + 1).index(move.number)
+    elif isinstance(move, DiscardMove):
+        return sum(offsets[:3]) + range(HAND_SIZE).index(move.index)
+    elif isinstance(move, PlayMove):
+        return sum(offsets[:4]) + range(HAND_SIZE).index(move.index)
+    else:
+        raise ValueError("Unexpected move {}.".format(move))
 
 def sample_to_move(sample):
-    assert (0 <= sample <= len(MOVES))
+    """
+    >>> sample_to_move(0)
+    InformColorMove(color='white')
+    >>> sample_to_move(5)
+    InformNumberMove(number=1)
+    >>> sample_to_move(10)
+    DiscardMove(index=0)
+    >>> sample_to_move(15)
+    PlayMove(index=0)
+    """
+    assert 0 <= sample <= len(MOVES)
     return MOVES[sample]
+
+################################################################################
+# Hand
+################################################################################
+class Hand(object):
+    def __init__(self, cards, info):
+        self.cards = cards
+        self.info = info
 
 ################################################################################
 # Game state
@@ -218,17 +268,13 @@ class GameState(object):
     def __init__(self):
         self.num_tokens = MAX_TOKENS
         self.num_fuses = MAX_FUSES
-
         self.deck = [card for color in Colors.COLORS
                           for n, count in enumerate(CARD_COUNTS, 1)
                           for card in [Card(color, n)] * count]
         self.discarded_cards = []
-        self.played_cards = dict() # color -> int
-
-        self.ai_hand = tuple()
-        self.ai_info = tuple()
-        self.player_hand = tuple()
-        self.player_info = tuple()
+        self.played_cards = collections.defaultdict(int)
+        self.ai = Hand([None] * HAND_SIZE, [None] * HAND_SIZE)
+        self.player = Hand([None] * HAND_SIZE, [None] * HAND_SIZE)
 
     def __repr__(self):
         return ("num_tokens:      {}\n".format(self.num_tokens) +
@@ -236,10 +282,10 @@ class GameState(object):
                 "deck:            {}\n".format(self.deck) +
                 "discarded_cards: {}\n".format(self.discarded_cards) +
                 "played_cards:    {}\n".format(self.played_cards) +
-                "ai_hand:         {}\n".format(self.ai_hand) +
-                "ai_info:         {}\n".format(self.ai_info) +
-                "player_hand:     {}\n".format(self.player_hand) +
-                "player_info:     {}".format(self.player_info))
+                "ai_cards:        {}\n".format(self.ai.cards) +
+                "ai.info:         {}\n".format(self.ai.info) +
+                "player_cards     {}\n".format(self.player.cards) +
+                "player.info:     {}".format(self.player.info))
 
 GAME_STATE_SPACE = gym.spaces.Tuple((
     gym.spaces.Discrete(MAX_TOKENS),                   # Tokens
@@ -254,10 +300,10 @@ GAME_STATE_SPACE = gym.spaces.Tuple((
 def game_state_to_sample(game_state):
     """
     >>> game_state = GameState()
-    >>> game_state.ai_hand = [Card(Colors.WHITE, 1)] * 5
-    >>> game_state.ai_info = [Information(None, None)] * 5
-    >>> game_state.player_hand = [Card(Colors.WHITE, 1)] * 5
-    >>> game_state.player_info = [Information(None, None)] * 5
+    >>> game_state.ai.cards = [Card(Colors.WHITE, 1)] * 5
+    >>> game_state.ai.info = [Information(None, None)] * 5
+    >>> game_state.player.cards = [Card(Colors.WHITE, 1)] * 5
+    >>> game_state.player.info = [Information(None, None)] * 5
     >>> game_state_to_sample(game_state) # doctest: +NORMALIZE_WHITESPACE
     (7,
      3,
@@ -274,75 +320,10 @@ def game_state_to_sample(game_state):
         game_state.num_fuses - 1,
         cards_to_sample(game_state.discarded_cards),
         cards_to_sample(played_cards),
-        tuple(card_to_sample(card) for card in game_state.ai_hand),
-        tuple(information_to_sample(info) for info in game_state.ai_info),
-        tuple(information_to_sample(info) for info in game_state.player_info),
+        tuple(card_to_sample(card) for card in game_state.ai.cards),
+        tuple(information_to_sample(info) for info in game_state.ai.info),
+        tuple(information_to_sample(info) for info in game_state.player.info),
     )
-
-def sample_to_game_state(sample):
-    """
-    >>> sample = (7, 3,
-    ...           [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    ...           [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    ...           ([0,0], [0,0], [0,0], [0,0], [0,0]),
-    ...           ([5,5], [5,5], [5,5], [5,5], [5,5]),
-    ...           ([5,5], [5,5], [5,5], [5,5], [5,5]))
-    >>> sample_to_game_state(sample) # doctest: +NORMALIZE_WHITESPACE
-    num_tokens:      8
-    num_fuses:       4
-    deck: [Card(color='white', number=0), Card(color='white', number=0),
-           Card(color='white', number=0), Card(color='white', number=1),
-           Card(color='white', number=1), Card(color='white', number=2),
-           Card(color='white', number=2), Card(color='white', number=3),
-           Card(color='white', number=3), Card(color='white', number=4),
-           Card(color='yellow', number=0), Card(color='yellow', number=0),
-           Card(color='yellow', number=0), Card(color='yellow', number=1),
-           Card(color='yellow', number=1), Card(color='yellow', number=2),
-           Card(color='yellow', number=2), Card(color='yellow', number=3),
-           Card(color='yellow', number=3), Card(color='yellow', number=4),
-           Card(color='green', number=0), Card(color='green', number=0),
-           Card(color='green', number=0), Card(color='green', number=1),
-           Card(color='green', number=1), Card(color='green', number=2),
-           Card(color='green', number=2), Card(color='green', number=3),
-           Card(color='green', number=3), Card(color='green', number=4),
-           Card(color='blue', number=0), Card(color='blue', number=0),
-           Card(color='blue', number=0), Card(color='blue', number=1),
-           Card(color='blue', number=1), Card(color='blue', number=2),
-           Card(color='blue', number=2), Card(color='blue', number=3),
-           Card(color='blue', number=3), Card(color='blue', number=4),
-           Card(color='red', number=0), Card(color='red', number=0),
-           Card(color='red', number=0), Card(color='red', number=1),
-           Card(color='red', number=1), Card(color='red', number=2),
-           Card(color='red', number=2), Card(color='red', number=3),
-           Card(color='red', number=3), Card(color='red', number=4)]
-    discarded_cards: []
-    played_cards:    {}
-    ai_hand:         (Card(color='white', number=1),
-                      Card(color='white', number=1),
-                      Card(color='white', number=1),
-                      Card(color='white', number=1),
-                      Card(color='white', number=1))
-    ai_info:         (Information(color=None, number=None),
-                      Information(color=None, number=None),
-                      Information(color=None, number=None),
-                      Information(color=None, number=None),
-                      Information(color=None, number=None))
-    player_hand:     ()
-    player_info:     (Information(color=None, number=None),
-                      Information(color=None, number=None),
-                      Information(color=None, number=None),
-                      Information(color=None, number=None),
-                      Information(color=None, number=None))
-    """
-    game_state = GameState()
-    game_state.num_tokens = sample[0] + 1
-    game_state.num_fuses = sample[1] + 1
-    game_state.discarded_cards = sample_to_cards(sample[2])
-    game_state.played_cards = sample_to_cards(sample[3])
-    game_state.ai_hand = tuple(sample_to_card(s) for s in sample[4])
-    game_state.ai_info = tuple(sample_to_information(i) for i in sample[5])
-    game_state.player_info = tuple(sample_to_information(i) for i in sample[6])
-    return game_state
 
 def render_game_state(gs):
     def render_cards(cards):
@@ -364,16 +345,69 @@ def render_game_state(gs):
             "discarded: {}\n".format(render_cards(gs.discarded_cards)) +
             "played:    {}\n".format(" ".join(played_cards)) +
             "-------------------------\n" +
-            "AI hand:   {}\n".format(render_cards(gs.ai_hand)) +
-            "AI info:   {}\n".format(render_infos(gs.ai_info)) +
-            "hand:      {}\n".format(render_cards(gs.player_hand)) +
-            "info:      {}".format(render_infos(gs.player_info)))
+            "AI hand:   {}\n".format(render_cards(gs.ai.cards)) +
+            "AI info:   {}\n".format(render_infos(gs.ai.info)) +
+            "hand:      {}\n".format(render_cards(gs.player.cards)) +
+            "info:      {}".format(render_infos(gs.player.info)))
 
 ################################################################################
 # Environment
 ################################################################################
 class HanabiEnv(gym.Env):
     metadata = {"render.modes": ["human"]}
+
+    def remove_card(self, who, index):
+        card = who.cards.pop(index)
+        who.info.pop(index)
+        assert card is not None
+        return card
+
+    def deal_card(self, who):
+        if len(self.game_state.deck) == 0:
+            who.cards.append(None)
+            who.info.append(None)
+        else:
+            who.cards.append(self.game_state.deck.pop())
+            who.info.append(Information(None, None))
+
+    def apply_information_move(self, who, move):
+        if self.game_state.num_tokens == 0:
+            raise ValueError("No more information tokens left.")
+
+        for i, card in enumerate(who.cards):
+            if isinstance(move, InformColorMove):
+                if card.color == move.color:
+                    info = who.info[i]
+                    who.info[i] = Information(card.color, info.number)
+            else:
+                assert isinstance(move, InformNumberMove)
+                if card.number == move.number:
+                    info = who.info[i]
+                    who.info[i] = Information(info.color, card.number)
+
+        self.game_state.num_tokens -= 1
+
+    def apply_move(self, move, is_player=True):
+        gs = self.game_state
+        if isinstance(move, InformColorMove) or isinstance(move, InformNumberMove):
+            who = gs.ai if is_player else player
+            self.apply_information_move(who, move)
+        elif isinstance(move, DiscardMove):
+            who = gs.player if is_player else ai
+            card = self.remove_card(who, move.index)
+            gs.discarded_cards.append(card)
+            gs.num_tokens += 1
+            self.deal_card(who)
+        elif isinstance(move, PlayMove):
+            who = gs.player if is_player else ai
+            card = self.remove_card(who, move.index)
+            if card.number == gs.played_cards[card.color] + 1:
+                gs.played_cards[card.color] += 1
+            else:
+                self.game_state.num_fuses -= 1
+            self.deal_card(who)
+        else:
+            raise ValueError("Unexpected move {}.".format(move))
 
     def __init__(self):
         self._seed()
@@ -382,16 +416,24 @@ class HanabiEnv(gym.Env):
         self.reward_range = (0, 1)
 
     def _step(self, action):
-        # TODO: Return (observation, reward, done, info).
-        return (None, 0, False, None)
+        move = sample_to_move(action)
+        try:
+            self.apply_move(move, True)
+            # TODO: Have AI make a move.
+            # TODO: Calculate reward and done.
+            return (None, 0, False, None) # (observation, reward, done, info)
+        except ValueError as e:
+            # TODO: Log this instead of printing it.
+            print(e)
+            return (None, 0, True, self.game_state)
 
     def _reset(self):
         gs = GameState()
         self.np_random.shuffle(gs.deck)
-        gs.ai_hand = [gs.deck.pop() for _ in range(HAND_SIZE)]
-        gs.ai_info = [Information(None, None) for _ in range(HAND_SIZE)]
-        gs.player_hand = [gs.deck.pop() for _ in range(HAND_SIZE)]
-        gs.player_info = [Information(None, None) for _ in range(HAND_SIZE)]
+        gs.ai.cards = [gs.deck.pop() for _ in range(HAND_SIZE)]
+        gs.ai.info = [Information(None, None) for _ in range(HAND_SIZE)]
+        gs.player.cards = [gs.deck.pop() for _ in range(HAND_SIZE)]
+        gs.player.info = [Information(None, None) for _ in range(HAND_SIZE)]
         self.game_state = gs
         return game_state_to_sample(self.game_state)
 
