@@ -276,6 +276,7 @@ class GameState(object):
         self.ai = Hand([None] * HAND_SIZE, [None] * HAND_SIZE)
         self.player = Hand([None] * HAND_SIZE, [None] * HAND_SIZE)
         self.num_turns_left = -1
+        self.turn = True
 
     def __repr__(self):
         return ("num_tokens:      {}\n".format(self.num_tokens) +
@@ -288,7 +289,67 @@ class GameState(object):
                 "player_cards     {}\n".format(self.player.cards) +
                 "player.info:     {}".format(self.player.info))
 
-    def get_num_turns_left(self):
+    def current_reward(self):
+        if self.num_fuses == 0:
+            return 0
+        return sum(self.played_cards.values())
+
+    def remove_card(self, who, index):
+        card = who.cards.pop(index)
+        who.info.pop(index)
+        assert card is not None
+        return card
+
+    def deal_card(self, who):
+        if len(self.deck) == 0:
+            who.cards.append(None)
+            who.info.append(None)
+        else:
+            who.cards.append(self.deck.pop())
+            who.info.append(Information(None, None))
+
+    def play_information_move(self, who, move):
+        if self.num_tokens == 0:
+            raise ValueError("No more information tokens left.")
+
+        for i, card in enumerate(who.cards):
+            if isinstance(move, InformColorMove):
+                if card.color == move.color:
+                    info = who.info[i]
+                    who.info[i] = Information(card.color, info.number)
+            else:
+                assert isinstance(move, InformNumberMove)
+                if card.number == move.number:
+                    info = who.info[i]
+                    who.info[i] = Information(info.color, card.number)
+
+        self.num_tokens -= 1
+
+    def play_move(self, move):
+        assert self.num_turns_left != 0
+        if isinstance(move, InformColorMove) or isinstance(move, InformNumberMove):
+            who = self.ai if self.turn else self.player
+            self.play_information_move(who, move)
+        elif isinstance(move, DiscardMove):
+            who = self.player if self.turn else self.ai
+            card = self.remove_card(who, move.index)
+            self.discarded_cards.append(card)
+            if self.num_tokens < MAX_TOKENS:
+                self.num_tokens += 1
+            self.deal_card(who)
+        elif isinstance(move, PlayMove):
+            who = self.player if self.turn else self.ai
+            card = self.remove_card(who, move.index)
+            if card.number == self.played_cards[card.color] + 1:
+                self.played_cards[card.color] += 1
+            else:
+                self.num_fuses -= 1
+                self.discarded_cards.append(card)
+            self.deal_card(who)
+        else:
+            raise ValueError("Unexpected move {}.".format(move))
+
+        # The game is over if there are no turns left.
         if self.num_fuses == 0:
             # We used up all the fuses.
             self.num_turns_left = 0
@@ -302,7 +363,8 @@ class GameState(object):
                 self.num_turns_left = 2
             else:
                 self.num_turns_left -= 1
-        return self.num_turns_left
+
+        self.turn = not self.turn
 
 GAME_STATE_SPACE = gym.spaces.Tuple((
     gym.spaces.Discrete(MAX_TOKENS),                   # Tokens
@@ -332,12 +394,13 @@ def game_state_to_sample(game_state):
     """
     played_cards = [card for (color, x) in game_state.played_cards.items()
                          for card in [Card(color, y) for y in range(1, x + 1)]]
+    player = game_state.player if game_state.turn else game_state.ai
     return (
         game_state.num_tokens - 1,
         game_state.num_fuses - 1,
         cards_to_sample(game_state.discarded_cards),
         cards_to_sample(played_cards),
-        tuple(card_to_sample(card) for card in game_state.ai.cards),
+        tuple(card_to_sample(card) for card in player.cards),
         tuple(information_to_sample(info) for info in game_state.ai.info),
         tuple(information_to_sample(info) for info in game_state.player.info),
     )
@@ -370,86 +433,39 @@ def render_game_state(gs):
 ################################################################################
 # Environment
 ################################################################################
+def random_policy(observation):
+    return MOVE_SPACE.sample()
+
 class HanabiEnv(gym.Env):
     metadata = {"render.modes": ["human"]}
 
-    def remove_card(self, who, index):
-        card = who.cards.pop(index)
-        who.info.pop(index)
-        assert card is not None
-        return card
-
-    def deal_card(self, who):
-        if len(self.game_state.deck) == 0:
-            who.cards.append(None)
-            who.info.append(None)
-        else:
-            who.cards.append(self.game_state.deck.pop())
-            who.info.append(Information(None, None))
-
-    def apply_information_move(self, who, move):
-        if self.game_state.num_tokens == 0:
-            raise ValueError("No more information tokens left.")
-
-        for i, card in enumerate(who.cards):
-            if isinstance(move, InformColorMove):
-                if card.color == move.color:
-                    info = who.info[i]
-                    who.info[i] = Information(card.color, info.number)
-            else:
-                assert isinstance(move, InformNumberMove)
-                if card.number == move.number:
-                    info = who.info[i]
-                    who.info[i] = Information(info.color, card.number)
-
-        self.game_state.num_tokens -= 1
-
-    def apply_move(self, move, is_player=True):
+    def play_move(self, move):
         gs = self.game_state
-        reward = 0
-        if isinstance(move, InformColorMove) or isinstance(move, InformNumberMove):
-            who = gs.ai if is_player else gs.player
-            self.apply_information_move(who, move)
-        elif isinstance(move, DiscardMove):
-            who = gs.player if is_player else gs.ai
-            card = self.remove_card(who, move.index)
-            gs.discarded_cards.append(card)
-            if gs.num_tokens < MAX_TOKENS:
-                gs.num_tokens += 1
-            self.deal_card(who)
-        elif isinstance(move, PlayMove):
-            who = gs.player if is_player else gs.ai
-            card = self.remove_card(who, move.index)
-            if card.number == gs.played_cards[card.color] + 1:
-                gs.played_cards[card.color] += 1
-                reward += 1
-            else:
-                gs.num_fuses -= 1
-                if gs.num_fuses == 0:
-                    # Final reward of 0 if we use up all the fuses.
-                    reward = -1 * sum(gs.played_cards.values())
-            self.deal_card(who)
-        else:
-            raise ValueError("Unexpected move {}.".format(move))
+        reward = -1 * gs.current_reward()
+        gs.play_move(move)
+        # The reward from this move is the total current reward, minus the
+        # total reward from the previous game state.
+        reward += gs.current_reward()
 
         # The game is over if there are no turns left.
-        done = gs.get_num_turns_left() == 0
+        done = gs.num_turns_left == 0
         return reward, done
 
-    def __init__(self):
+    def __init__(self, ai_policy=random_policy):
         self._seed()
         self.action_space = MOVE_SPACE
         self.observation_space = GAME_STATE_SPACE
         self.reward_range = (0, 1)
+        self.ai_policy = ai_policy
 
     def _step(self, action):
         move = sample_to_move(action)
         try:
-            reward, done = self.apply_move(move, is_player=True)
+            reward, done = self.play_move(move)
             if not done:
-                # TODO: Replace with a pluggable player.
-                ai_move = self.action_space.sample()
-                ai_reward, done = self.apply_move(move, is_player=False)
+                observation = game_state_to_sample(self.game_state)
+                ai_move = sample_to_move(self.ai_policy(observation))
+                ai_reward, done = self.play_move(ai_move)
                 reward += ai_reward
             # Return (observation, reward, done, info).
             return (game_state_to_sample(self.game_state),
@@ -461,7 +477,7 @@ class HanabiEnv(gym.Env):
             # TODO: Log this instead of printing it.
             print(e)
             # Final reward of 0 if we break the rules.
-            reward = -1 * sum(gs.played_cards.values())
+            reward = -1 * self.game_state.current_reward()
             return (None, reward, True, self.game_state)
 
     def _reset(self):
