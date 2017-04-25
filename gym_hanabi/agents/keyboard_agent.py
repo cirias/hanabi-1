@@ -1,6 +1,7 @@
 import gym
 import gym_hanabi
 from gym_hanabi.envs import hanabi_env
+import sys
 
 HAND_SIZE = hanabi_env.HAND_SIZE
 COLORS = hanabi_env.Colors.COLORS
@@ -15,6 +16,11 @@ def is_int(s):
 def valid_card_index(s):
     return is_int(s) and 0 <= int(s) < HAND_SIZE
 
+def get_python_version():
+    version = sys.version_info[0]
+    assert version in [2, 3]
+    return version
+
 def usage():
     return ("usage:\n" +
             "  discard [0-{}]\n".format(HAND_SIZE - 1) +
@@ -23,7 +29,11 @@ def usage():
             "  number  [0-{}]".format(HAND_SIZE - 1))
 
 def act():
-    parts = raw_input("> ").split()
+    # In Python 3, raw_input was renamed to just input.
+    if get_python_version() == 2:
+        parts = raw_input("> ").split()
+    else:
+        parts = input("> ").split()
 
     if len(parts) != 2:
         print(usage())
