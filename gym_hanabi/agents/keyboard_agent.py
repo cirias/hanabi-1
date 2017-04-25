@@ -23,7 +23,7 @@ def usage():
             "  number  [0-{}]".format(HAND_SIZE - 1))
 
 def act():
-    parts = input("> ").split()
+    parts = raw_input("> ").split()
 
     if len(parts) != 2:
         print(usage())
