@@ -406,15 +406,17 @@ def game_state_to_sample(game_state):
     )
 
 def render_game_state(gs):
-    def render_cards(cards):
-        return " ".join(render_card(card) for card in cards)
+    def render_cards(cards, show=True):
+        shown_cards = " ".join(render_card(card) for card in cards)
+        hidden_cards = " ".join("??" for card in cards)
+        return shown_cards if show else hidden_cards
 
     def render_infos(infos):
         return " ".join(render_information(info) for info in infos)
 
     played_cards = []
     for c in Colors.COLORS:
-        if c in gs.played_cards:
+        if gs.played_cards[c] > 0:
             played_cards.append(render_card(Card(c, gs.played_cards[c])))
         else:
             played_cards.append(termcolor.colored("--", c))
@@ -425,9 +427,9 @@ def render_game_state(gs):
             "discarded: {}\n".format(render_cards(gs.discarded_cards)) +
             "played:    {}\n".format(" ".join(played_cards)) +
             "-------------------------\n" +
-            "AI hand:   {}\n".format(render_cards(gs.ai.cards)) +
+            "AI hand:   {}\n".format(render_cards(gs.ai.cards, show=gs.turn)) +
             "AI info:   {}\n".format(render_infos(gs.ai.info)) +
-            "hand:      {}\n".format(render_cards(gs.player.cards)) +
+            "hand:      {}\n".format(render_cards(gs.player.cards, show=not gs.turn)) +
             "info:      {}".format(render_infos(gs.player.info)))
 
 ################################################################################
