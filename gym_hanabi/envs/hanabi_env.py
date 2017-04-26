@@ -668,11 +668,6 @@ class HanabiEnv(gym.Env):
         self.reward_range = (0, 1)
         self.ai_policy = ai_policy
 
-        # rllab calls _render before it calls _reset (which seems like a bug).
-        # If we don't call _reset here, then self.game_state is never defined
-        # and _render crashes.
-        self._reset()
-
     def _step(self, action):
         raise NotImplementedError()
 
@@ -687,6 +682,9 @@ class HanabiEnv(gym.Env):
         return game_state_to_sample(self.game_state)
 
     def _render(self, mode='human', close=False):
+        if close:
+            return
+
         if mode == "human":
             print(render_game_state(self.game_state))
         elif mode == "ansi":
