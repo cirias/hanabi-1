@@ -1,6 +1,6 @@
-import gym_hanabi
 from gym_hanabi.envs import hanabi_env
 from six.moves import input
+import pickle
 
 def is_int(s):
     try:
@@ -48,3 +48,7 @@ class KeyboardPolicy(object):
 
     def get_action(self, _observation):
         return (hanabi_env.move_to_sample(KeyboardPolicy.get_move()), )
+
+if __name__ == "__main__":
+    with open("pickled_policies/KeyboardPolicy.pickle", "wb") as f:
+        pickle.dump(KeyboardPolicy(), f)

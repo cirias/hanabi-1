@@ -1,5 +1,5 @@
-import gym_hanabi
 from gym_hanabi.envs import hanabi_env
+import pickle
 
 class HeuristicPolicy(object):
     @staticmethod
@@ -187,3 +187,7 @@ class HeuristicPolicy(object):
 
     def get_action(self, observation):
         return (hanabi_env.move_to_sample(HeuristicPolicy.get_move(observation)), )
+
+if __name__ == "__main__":
+    with open("pickled_policies/HeuristicPolicy.pickle", "wb") as f:
+        pickle.dump(HeuristicPolicy(), f)

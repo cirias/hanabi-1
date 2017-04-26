@@ -1,14 +1,16 @@
-import gym
-import gym_hanabi
+#! /usr/bin/env python
+
+from gym_hanabi.policies import *
 import argparse
+import gym
+import pickle
 
 def main(args):
-    # TODO: For now, this policy is hardcoded. In the future, we should be able
-    # to conveniently plug in any policy we want.
-    policy = gym_hanabi.policies.KeyboardPolicy()
-
     env = gym.make("HanabiSelf-v0")
     env = gym.wrappers.Monitor(env, args.directory, force=args.force)
+
+    with open(args.pickled_policy, "rb") as f:
+        policy = pickle.load(f)
 
     for _ in range(args.num_games):
         observation = env.reset()
@@ -21,14 +23,19 @@ def main(args):
 
 def get_parser():
     parser = argparse.ArgumentParser()
+
     parser.add_argument("-r", "--render",
         action="store_true", help="Render the game.")
     parser.add_argument("-f", "--force",
         action="store_true", help="Overwrite monitoring directory.")
-    parser.add_argument("num_games",
-        type=int, help="Number of Hanabi games to play.")
+    parser.add_argument("-n", "--num_games",
+        type=int, default=1, help="Number of Hanabi games to play.")
+
+    parser.add_argument("pickled_policy",
+        type=str, help="Pickled policy file.")
     parser.add_argument("directory",
         type=str, help="Monitoring directory.")
+
     return parser
 
 if __name__ == "__main__":
