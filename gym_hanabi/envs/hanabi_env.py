@@ -469,32 +469,37 @@ def compute_play_or_discard(all_info, played_cards):
     """
     Return cards that we think are playable, and the candidate for a discard.
     A card is playable if we have number information for it that matches a card
-    that could be played next. The candidate to discard is a card for which we
-    have the least amount of information.
+    that could be played next. The candidate to discard is a card whose
+    duplicate has already been played. If we can't find such a card, then it is
+    a card for which we have the least amount of information.
 
     TODO: Determine situations when we should play a card with only color
     information.
     TODO: Discard cards in FIFO order, if there are multiple with the least
     amount of information.
-    TODO: Prioritize discarding a card that doesn't have the least amount of
-    information, if we know it's useless (e.g., number is less than that
-    already played).
     """
     play_cards = []
-    discard_card = 0
+    discard_card = None
     for card, info in enumerate(all_info):
         color, number = info
-        if (color <= all_info[discard_card].color and number
-                <= all_info[discard_card].number):
-            # This card has the same or less information than the current card
-            # we want to discard.
-            discard_card = card
 
         if number is None:
-            # Ignore a card with no number information.
+            # Don't try to play a card with no number information. If that
+            # color pile is already complete, discard it.
+            if color is not None and played_cards[color] == len(CARD_COUNTS):
+                discard_card = card
             continue
 
         if color is None:
+            # If all color piles are already past this number, discard the
+            # card.
+            all_colors_played = True
+            for color in Colors.COLORS:
+                if played_cards[color] < number:
+                    all_colors_played = False
+            if all_colors_played:
+                discard_card = card
+
             # Check if the card's number is playable with respect to any
             # one of the colors.
             match = False
@@ -510,6 +515,21 @@ def compute_play_or_discard(all_info, played_cards):
             # playable. If the check succeeds, add this card to the to top of
             # the cards we think are playable.
             play_cards = [card] + play_cards
+        elif number <= played_cards[color]:
+            # If this color pile is already past this number, discard the card.
+            discard_card = card
+
+    # If we weren't able to find a card that we could definitely discard, then
+    # discard one with the least amount of information.
+    if discard_card is None:
+        discard_card = 0
+        for card, info in enumerate(all_info):
+            color, number = info
+            if (color <= all_info[discard_card].color and number
+                    <= all_info[discard_card].number):
+                # This card has the same or less information than the current card
+                # we want to discard.
+                discard_card = card
 
     return play_cards, discard_card
 
