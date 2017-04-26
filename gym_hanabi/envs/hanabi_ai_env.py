@@ -13,12 +13,12 @@ class HanabiAiEnv(HanabiEnv):
             ai_move = None
             if not done:
                 observation = game_state_to_sample(self.game_state)
-                ai_move = self.ai_policy(observation)
-                ai_reward, done = self.play_move(ai_move)
-                reward += ai_reward
+                ai_action = self.ai_policy.get_action(observation)[0]
+                ai_reward, done = self.play_move(sample_to_move(ai_action))
             observation = game_state_to_sample(self.game_state)
             return (observation, reward, done, empty_info)
-        except ValueError:
+        except ValueError as e:
+            print(e)
             # The final reward is 0 if we break the rules.
             reward = -1 * self.game_state.current_reward()
             return (None, reward, True, empty_info)

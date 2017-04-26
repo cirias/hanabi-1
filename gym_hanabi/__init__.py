@@ -1,6 +1,6 @@
 from gym.envs.registration import register
-import gym_hanabi.agents
 import gym_hanabi.envs
+import gym_hanabi.policies
 
 register(
     id='HanabiSelf-v0',

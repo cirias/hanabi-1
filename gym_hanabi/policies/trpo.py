@@ -1,9 +1,10 @@
 from rllab.algos.trpo import TRPO
 from rllab.baselines.linear_feature_baseline import LinearFeatureBaseline
 from rllab.envs.gym_env import GymEnv
-from rllab.envs.normalized_env import normalize
 from rllab.misc.instrument import run_experiment_lite
 from rllab.policies.categorical_mlp_policy import CategoricalMLPPolicy
+
+import pickle
 
 def run_task(*_):
     import gym_hanabi
@@ -12,7 +13,7 @@ def run_task(*_):
     # require different policies. For example with a Discrete action space, a
     # CategoricalMLPPolicy works, but for a Box action space may need to use
     # a GaussianMLPPolicy (see the trpo_gym_pendulum.py example)
-    env = normalize(GymEnv("HanabiSelf-v0"))
+    env = GymEnv("HanabiSelf-v0")
 
     policy = CategoricalMLPPolicy(
         env_spec=env.spec,
@@ -35,7 +36,6 @@ def run_task(*_):
         # plot=True,
     )
     algo.train()
-
 
 run_experiment_lite(
     run_task,
