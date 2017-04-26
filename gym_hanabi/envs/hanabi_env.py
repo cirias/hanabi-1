@@ -667,6 +667,10 @@ class HanabiEnv(gym.Env):
         self.observation_space = GAME_STATE_SPACE
         self.reward_range = (0, 1)
         self.ai_policy = ai_policy
+
+        # rllab calls _render before it calls _reset (which seems like a bug).
+        # If we don't call _reset here, then self.game_state is never defined
+        # and _render crashes.
         self._reset()
 
     def _step(self, action):
