@@ -6,10 +6,10 @@ register(
     id='HanabiSelf-v0',
     entry_point='gym_hanabi.envs:HanabiSelfEnv',
     max_episode_steps=200,
-    # reward_threshold=195.0,
 )
 
 register(
     id='HanabiAi-v0',
     entry_point='gym_hanabi.envs:HanabiAiEnv',
+    max_episode_steps=200,
 )

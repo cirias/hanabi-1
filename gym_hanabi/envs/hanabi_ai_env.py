@@ -18,7 +18,6 @@ class HanabiAiEnv(HanabiEnv):
             observation = game_state_to_sample(self.game_state)
             return (observation, reward, done, empty_info)
         except ValueError as e:
-            print(e)
             # The final reward is 0 if we break the rules.
             reward = -1 * self.game_state.current_reward()
             return (None, reward, True, empty_info)
