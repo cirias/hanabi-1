@@ -377,10 +377,28 @@ GAME_STATE_SPACE = gym.spaces.Tuple((
     gym.spaces.Discrete(MAX_FUSES),                    # Fuses
     DISCARDED_CARDS_SPACE,                             # Discarded cards
     PLAYED_CARDS_SPACE,                                # Played cards
-    gym.spaces.Tuple([CARD_SPACE] * HAND_SIZE),        # AI cards
-    gym.spaces.Tuple([INFORMATION_SPACE] * HAND_SIZE), # AI info
-    gym.spaces.Tuple([INFORMATION_SPACE] * HAND_SIZE)  # Player info
+    gym.spaces.Tuple([CARD_SPACE] * HAND_SIZE),        # Their cards
+    gym.spaces.Tuple([INFORMATION_SPACE] * HAND_SIZE), # Their info
+    gym.spaces.Tuple([INFORMATION_SPACE] * HAND_SIZE)  # Your info
 ))
+
+class GameStateObservation(object):
+
+    def __init__(self, sample):
+        (num_tokens, num_fuses, discarded_cards, played_cards, their_cards,
+                their_info, your_info) = sample
+        self.num_tokens = num_tokens
+        self.num_fuses = num_fuses
+        self.discarded_cards = sample_to_cards(discarded_cards)
+        played_cards = sample_to_cards(played_cards)
+        self.played_cards = collections.defaultdict(int)
+        for color, number in played_cards:
+            if number > self.played_cards[color]:
+                self.played_cards[color] = number
+        self.them = Hand([sample_to_card(sample) for sample in their_cards],
+                         [sample_to_information(sample) for sample in their_info])
+        self.you = Hand([None] * HAND_SIZE,
+                        [sample_to_information(sample) for sample in your_info])
 
 def game_state_to_sample(game_state):
     """
@@ -400,15 +418,18 @@ def game_state_to_sample(game_state):
     """
     played_cards = [card for (color, x) in game_state.played_cards.items()
                          for card in [Card(color, y) for y in range(1, x + 1)]]
-    other_player = game_state.ai if game_state.player_turn else game_state.player
+
+    them = game_state.ai if game_state.player_turn else game_state.player
+    you = game_state.player if game_state.player_turn else game_state.ai
+
     return (
         game_state.num_tokens - 1,
         game_state.num_fuses - 1,
         cards_to_sample(game_state.discarded_cards),
         cards_to_sample(played_cards),
-        tuple(card_to_sample(card) for card in other_player.cards),
-        tuple(information_to_sample(info) for info in game_state.ai.info),
-        tuple(information_to_sample(info) for info in game_state.player.info),
+        tuple(card_to_sample(card) for card in them.cards),
+        tuple(information_to_sample(info) for info in them.info),
+        tuple(information_to_sample(info) for info in you.info),
     )
 
 def render_game_state(gs):
@@ -444,8 +465,161 @@ def render_game_state(gs):
 ################################################################################
 # Environment
 ################################################################################
-def random_policy(observation):
-    return MOVE_SPACE.sample()
+def compute_play_or_discard(all_info, played_cards):
+    """
+    Return cards that we think are playable, and the candidate for a discard.
+    A card is playable if we have number information for it that matches a card
+    that could be played next. The candidate to discard is a card for which we
+    have the least amount of information.
+
+    TODO: Determine situations when we should play a card with only color
+    information.
+    TODO: Discard cards in FIFO order, if there are multiple with the least
+    amount of information.
+    TODO: Prioritize discarding a card that doesn't have the least amount of
+    information, if we know it's useless (e.g., number is less than that
+    already played).
+    """
+    play_cards = []
+    discard_card = 0
+    for card, info in enumerate(all_info):
+        color, number = info
+        if (color <= all_info[discard_card].color and number
+                <= all_info[discard_card].number):
+            # This card has the same or less information than the current card
+            # we want to discard.
+            discard_card = card
+
+        if number is None:
+            # Ignore a card with no number information.
+            continue
+
+        if color is None:
+            # Check if the card's number is playable with respect to any
+            # one of the colors.
+            match = False
+            for color in Colors.COLORS:
+                if number == played_cards[color] + 1:
+                    match = True
+            if match:
+                # If the check succeeds, add this card to the cards we think
+                # are playable.
+                play_cards.append(card)
+        elif number == played_cards[color] + 1:
+            # If we have color information, check if the card's number is
+            # playable. If the check succeeds, add this card to the to top of
+            # the cards we think are playable.
+            play_cards = [card] + play_cards
+
+    return play_cards, discard_card
+
+
+def compute_information(observation):
+    """
+    Return information moves that we think will be helpful, based on the cards
+    that we think the other player will play or discard using
+    compute_play_or_discard. This is added to in order:
+    1) Color information about the cards that the other will play that will
+    result in a fuse.
+    2) Number information about the card that the other will discard, if the
+    card is eventually playable and has no duplicates left.
+    3) Number information about the cards that the other has color information
+    about, if the card is playable.
+    4) Information about the cards that the other has no information about, if
+    the card is playable. If the other player has other cards with the same
+    number and a different color, and no color information for those cards,
+    then give color information for the card we want them to play.  Else, give
+    number information.
+    """
+    information = []
+    their_cards_to_play, their_card_to_discard = compute_play_or_discard(
+            observation.them.info, observation.played_cards)
+    # (1)
+    # NOTE: Color information is sufficient to prevent the other player from
+    # playing this card, since compute_play_or_discard only returns cards to
+    # play if we have number information.
+    for card in their_cards_to_play:
+        color, number = observation.them.cards[card]
+        if number != observation.played_cards[color] + 1:
+            information.append(InformColorMove(color))
+    if information:
+        return information
+
+    # (2)
+    card = observation.them.cards[their_card_to_discard]
+    if card.number > observation.played_cards[card.color]:
+        discard_count = observation.discarded_cards.count(card)
+        if discard_count + 1 == CARD_COUNTS[card.number - 1]:
+            information.append(InformNumberMove(card.number))
+    if information:
+        return information
+
+    # (3)
+    color_info_cards = [card_index for card_index, info in
+        enumerate(observation.them.info) if info.color is not None and
+        info.number is None]
+    for card_index in color_info_cards:
+        card = observation.them.cards[card_index]
+        if card.number == observation.played_cards[card.color] + 1:
+            information.append(InformNumberMove(card.number))
+    if information:
+        return information
+
+    # (4)
+    no_info_cards = [card_index for card_index, info in
+            enumerate(observation.them.info) if info.color is None and
+            info.number is None]
+    for card_index in no_info_cards:
+        card = observation.them.cards[card_index]
+        if card.number == observation.played_cards[card.color] + 1:
+            # A duplicate has the same number but a different color.
+            duplicates = [i for i, dup in enumerate(observation.them.cards) if
+                    dup.number == card.number and dup.color != card.color]
+            # Only give color information about the duplicate if they don't
+            # already have information about its color.
+            duplicates = [i for i in duplicates if
+                    observation.them.info[i].color is None]
+            if duplicates:
+                information.append(InformColorMove(card.color))
+            else:
+                information.append(InformNumberMove(card.number))
+    return information
+
+
+def fixed_policy(observation_sample):
+    observation = GameStateObservation(observation_sample)
+
+    play_cards, discard_card = compute_play_or_discard(observation.you.info,
+            observation.played_cards)
+    # Pretend to apply the moves that we would play, so we don't inform the
+    # other player about a card that we might already have.
+    for card in play_cards:
+        number_info, color_info = observation.you.info[card]
+        if color_info is not None:
+            # If we have color information about the card we'll play, that
+            # color pile will definitely increase.
+            observation.played_cards[color_info] += 1
+        else:
+            # If we don't have color information about the card that we'll
+            # play, a color pile whose next number matches may increase. Apply
+            # the hypothetical move if exactly one color pile matches.
+            possible_colors = [color for color, played_number in
+                    observation.played_cards.items() if number_info ==
+                    played_number + 1]
+            if len(possible_colors) == 1:
+                observation.played_cards[possible_colors[0]] += 1
+
+    if observation.num_tokens > 0:
+        information = compute_information(observation)
+    else:
+        information = []
+
+    if information:
+        return information[0]
+    elif play_cards:
+        return PlayMove(play_cards[0])
+    else:
+        return DiscardMove(discard_card)
 
 class HanabiEnv(gym.Env):
     metadata = {"render.modes": ["human", "ansi"]}
@@ -462,7 +636,7 @@ class HanabiEnv(gym.Env):
         done = gs.num_turns_left == 0
         return reward, done
 
-    def __init__(self, ai_policy=random_policy):
+    def __init__(self, ai_policy=fixed_policy):
         self._seed()
         self.action_space = MOVE_SPACE
         self.observation_space = GAME_STATE_SPACE

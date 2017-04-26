@@ -7,7 +7,7 @@ class HanabiAiEnv(HanabiEnv):
             reward, done = self.play_move(move)
             if not done:
                 observation = game_state_to_sample(self.game_state)
-                ai_move = sample_to_move(self.ai_policy(observation))
+                ai_move = self.ai_policy(observation)
                 ai_reward, done = self.play_move(ai_move)
                 reward += ai_reward
             # Return (observation, reward, done, info).

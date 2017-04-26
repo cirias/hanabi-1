@@ -3,6 +3,7 @@ import gym_hanabi
 from gym_hanabi.envs import hanabi_env
 import sys
 
+CARD_COUNTS = hanabi_env.CARD_COUNTS
 HAND_SIZE = hanabi_env.HAND_SIZE
 COLORS = hanabi_env.Colors.COLORS
 
@@ -16,6 +17,9 @@ def is_int(s):
 def valid_card_index(s):
     return is_int(s) and 0 <= int(s) < HAND_SIZE
 
+def valid_card_number(s):
+    return is_int(s) and 0 < int(s) <= len(CARD_COUNTS)
+
 def get_python_version():
     version = sys.version_info[0]
     assert version in [2, 3]
@@ -26,7 +30,7 @@ def usage():
             "  discard [0-{}]\n".format(HAND_SIZE - 1) +
             "  play    [0-{}]\n".format(HAND_SIZE - 1) +
             "  color   [{}]\n".format("|".join(COLORS)) +
-            "  number  [0-{}]".format(HAND_SIZE - 1))
+            "  number  [1-{}]".format(len(CARD_COUNTS)))
 
 def act():
     # In Python 3, raw_input was renamed to just input.
@@ -46,7 +50,7 @@ def act():
         return hanabi_env.move_to_sample(hanabi_env.PlayMove(int(arg)))
     elif command == "color" and arg in COLORS:
         return hanabi_env.move_to_sample(hanabi_env.InformColorMove(arg))
-    elif command == "number" and valid_card_index(arg):
+    elif command == "number" and valid_card_number(arg):
         return hanabi_env.move_to_sample(hanabi_env.InformNumberMove(int(arg)))
     else:
         print(usage())
