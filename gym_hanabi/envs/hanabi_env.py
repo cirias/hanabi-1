@@ -4,6 +4,7 @@ import gym.spaces
 import gym.utils
 import gym.utils.seeding
 import termcolor
+import six
 
 ################################################################################
 # Helper functions
@@ -80,10 +81,10 @@ def sample_to_number(sample):
 # Cards
 ################################################################################
 Card = collections.namedtuple('Card', ['color', 'number'])
-CARD_SPACE = gym.spaces.MultiDiscrete([
-    [0, len(Colors.COLORS)], # Color
-    [0, NUM_NUMBERS]         # Number
-])
+CARD_SPACE = gym.spaces.Tuple((
+    gym.spaces.Discrete(len(Colors.COLORS) + 1), # Color
+    gym.spaces.Discrete(NUM_NUMBERS + 1)         # Number
+))
 
 def card_to_sample(card):
     """
@@ -125,7 +126,8 @@ def render_card(card):
 # Discarded and played cards.
 ################################################################################
 CARDS = [Card(c, n) for c in Colors.COLORS for n in range(1, NUM_NUMBERS + 1)]
-DISCARDED_CARDS_SPACE = gym.spaces.MultiDiscrete([[0, 3] * len(CARDS)])
+DISCARDED_CARDS_SPACE = \
+    gym.spaces.Tuple(tuple([gym.spaces.Discrete(4)] * len(CARDS)))
 PLAYED_CARDS_SPACE = DISCARDED_CARDS_SPACE
 
 def cards_to_sample(cards):
@@ -152,10 +154,10 @@ def sample_to_cards(sample):
 # Information
 ################################################################################
 Information = collections.namedtuple('Information', ['color', 'number'])
-INFORMATION_SPACE = gym.spaces.MultiDiscrete([
-    [0, len(Colors.COLORS) + 1], # Color
-    [0, NUM_NUMBERS + 1]         # Number
-])
+INFORMATION_SPACE = gym.spaces.Tuple((
+    gym.spaces.Discrete(len(Colors.COLORS) + 2), # Color
+    gym.spaces.Discrete(NUM_NUMBERS + 2)         # Number
+))
 
 def information_to_sample(info):
     """
@@ -198,6 +200,8 @@ def sample_to_information(s):
     return Information(color, number)
 
 def render_information(info):
+    if info is None:
+        return "  "
     number = info.number or "?"
     color = info.color[0].upper() if info.color else "?"
     return "{}{}".format(number, color)
@@ -313,6 +317,8 @@ class GameState(object):
             raise ValueError("No more information tokens left.")
 
         for i, card in enumerate(who.cards):
+            if card is None:
+                continue
             if isinstance(move, InformColorMove):
                 if card.color == move.color:
                     info = who.info[i]
@@ -442,7 +448,7 @@ def random_policy(observation):
     return MOVE_SPACE.sample()
 
 class HanabiEnv(gym.Env):
-    metadata = {"render.modes": ["human"]}
+    metadata = {"render.modes": ["human", "ansi"]}
 
     def play_move(self, move):
         gs = self.game_state
@@ -462,6 +468,7 @@ class HanabiEnv(gym.Env):
         self.observation_space = GAME_STATE_SPACE
         self.reward_range = (0, 1)
         self.ai_policy = ai_policy
+        self._reset()
 
     def _step(self, action):
         raise NotImplementedError()
@@ -479,6 +486,10 @@ class HanabiEnv(gym.Env):
     def _render(self, mode='human', close=False):
         if mode == "human":
             print(render_game_state(self.game_state))
+        elif mode == "ansi":
+            s = six.StringIO()
+            s.write(render_game_state(self.game_state) + "\n")
+            return s
         else:
             super(HanabiEnv, self).render(mode=mode)
 

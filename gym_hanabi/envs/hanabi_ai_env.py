@@ -1,8 +1,6 @@
 from gym_hanabi.envs.hanabi_env import *
 
 class HanabiAiEnv(HanabiEnv):
-    metadata = {"render.modes": ["human"]}
-
     def _step(self, action):
         move = sample_to_move(action)
         try:
