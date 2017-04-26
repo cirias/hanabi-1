@@ -63,7 +63,6 @@ def main(env_id):
     while not done:
         env.render()
         observation, reward, done, info = env.step(act())
-        print(info["move"])
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
