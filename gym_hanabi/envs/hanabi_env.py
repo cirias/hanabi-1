@@ -400,13 +400,13 @@ def game_state_to_sample(game_state):
     """
     played_cards = [card for (color, x) in game_state.played_cards.items()
                          for card in [Card(color, y) for y in range(1, x + 1)]]
-    player = game_state.player if game_state.player_turn else game_state.ai
+    other_player = game_state.ai if game_state.player_turn else game_state.player
     return (
         game_state.num_tokens - 1,
         game_state.num_fuses - 1,
         cards_to_sample(game_state.discarded_cards),
         cards_to_sample(played_cards),
-        tuple(card_to_sample(card) for card in player.cards),
+        tuple(card_to_sample(card) for card in other_player.cards),
         tuple(information_to_sample(info) for info in game_state.ai.info),
         tuple(information_to_sample(info) for info in game_state.player.info),
     )
