@@ -294,8 +294,6 @@ class GameState(object):
                 "player.info:     {}".format(self.player.info))
 
     def current_reward(self):
-        if self.num_fuses == 0:
-            return 0
         return sum(self.played_cards.values())
 
     def remove_card(self, who, index):
@@ -389,16 +387,23 @@ class GameStateObservation(object):
                 their_info, your_info) = sample
         self.num_tokens = num_tokens
         self.num_fuses = num_fuses
+
         self.discarded_cards = sample_to_cards(discarded_cards)
         played_cards = sample_to_cards(played_cards)
         self.played_cards = collections.defaultdict(int)
         for color, number in played_cards:
             if number > self.played_cards[color]:
                 self.played_cards[color] = number
+
+        # Filter out cards that don't exist, for hands that are smaller than
+        # the maximum hand size.
         self.them = Hand([sample_to_card(sample) for sample in their_cards],
                          [sample_to_information(sample) for sample in their_info])
+        self.them.cards = [card for card in self.them.cards if card is not None]
+        self.them.info = [info for info in self.them.info if info is not None]
         self.you = Hand([None] * HAND_SIZE,
                         [sample_to_information(sample) for sample in your_info])
+        self.you.info = [info for info in self.you.info if info is not None]
 
 def game_state_to_sample(game_state):
     """
