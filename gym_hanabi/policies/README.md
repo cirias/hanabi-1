@@ -4,7 +4,7 @@
 A `Policy` is a class which implements a `get_action` method. It looks
 something like this:
 
-```
+```python
 class MyPolicy(object):
     def get_action(self, observation):
         return (42, )
@@ -64,7 +64,7 @@ $ ./run_self -n 100 pickled_policies/trpo.py /tmp/trpo
 4. Add `gym_hanabi` and `rllab` to your `PYTHONPATH` (e.g. `export
    PYTHONPATH="$HOME/gym_hanabi:$HOME/rllab:$PYTHONPATH"`).
 5. Write a script which uses rllab to learn and pickle a policy. For example,
-   take a look at `trpo.py` which you can run with `python trpo.py`.
+   take a look at [`trpo.py`](trpo.py) which you can run with `python trpo.py`.
 
 [conda_install]: https://www.continuum.io/downloads
 [rllab_install]: https://rllab.readthedocs.io/en/latest/user/installation.html
