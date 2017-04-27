@@ -45,11 +45,12 @@ $ ./run_ai.py -n 100 \
 
 In addition to the basic policies, we can also learn policies using rllab! In
 particular, we can pickle and use any [rllab policy][rllab_policy]. For
-example, run [`trpo.py`](trpo.py) (instructions below) to generate
-`pickled_policies/trpo.pickle`. Then, we can play the AI against itself:
+example, run [`mini_trpo_ai.py`](mini_trpo_ai.py) (instructions below) to
+generate `pickled_policies/mini_trpo_ai.pickle`. Then, we can play the AI
+against itself:
 
 ```
-$ ./run_self -n 100 pickled_policies/trpo.py /tmp/trpo
+$ ./run_self -n 100 pickled_policies/mini_trpo_ai.pickle /tmp/mini_trpo_ai
 ```
 
 ## Learning policies with rllab
@@ -64,7 +65,8 @@ $ ./run_self -n 100 pickled_policies/trpo.py /tmp/trpo
 4. Add `gym_hanabi` and `rllab` to your `PYTHONPATH` (e.g. `export
    PYTHONPATH="$HOME/gym_hanabi:$HOME/rllab:$PYTHONPATH"`).
 5. Write a script which uses rllab to learn and pickle a policy. For example,
-   take a look at [`trpo.py`](trpo.py) which you can run with `python trpo.py`.
+   take a look at [`mini_trpo_ai.py`](mini_trpo_ai.py) which you can run with
+   `python mini_trpo_ai.py`.
 
 [conda_install]: https://www.continuum.io/downloads
 [rllab_install]: https://rllab.readthedocs.io/en/latest/user/installation.html

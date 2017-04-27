@@ -7,7 +7,9 @@ import gym_hanabi
 import pickle
 
 def main():
-    env = GymEnv("HanabiSelf-v0")
+    env = GymEnv("MiniHanabiAi-v0")
+    config = gym_hanabi.envs.hanabi_env.MINI_HANABI_CONFIG
+    env.env.unwrapped.ai_policy = gym_hanabi.policies.HeuristicPolicy(config)
     policy = CategoricalMLPPolicy(env_spec=env.spec, hidden_sizes=(8, 8))
     baseline = LinearFeatureBaseline(env_spec=env.spec)
     algo = TRPO(
@@ -16,12 +18,12 @@ def main():
         baseline=baseline,
         batch_size=4000,
         max_path_length=env.horizon,
-        n_itr=5,
+        n_itr=50,
         discount=0.99,
         step_size=0.01,
     )
     algo.train()
-    with open("pickled_policies/trpo.pickle", "wb") as f:
+    with open("pickled_policies/mini_trpo_ai.pickle", "wb") as f:
         pickle.dump(policy, f)
 
 if __name__ == "__main__":

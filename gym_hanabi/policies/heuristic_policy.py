@@ -2,8 +2,10 @@ from gym_hanabi.envs import hanabi_env
 import pickle
 
 class HeuristicPolicy(object):
-    @staticmethod
-    def compute_play_or_discard(all_info, played_cards):
+    def __init__(self, config):
+        self.config = config
+
+    def compute_play_or_discard(self, all_info, played_cards):
         """
         Return cards that we think are playable, and the candidate for a
         discard. A card is playable if we have number information for it that
@@ -25,7 +27,8 @@ class HeuristicPolicy(object):
             if number is None:
                 # Don't try to play a card with no number information. If that
                 # color pile is already complete, discard it.
-                if color is not None and played_cards[color] == hanabi_env.NUM_NUMBERS:
+                num_numbers = len(self.config.card_counts)
+                if color is not None and played_cards[color] == num_numbers:
                     discard_card = card
                 continue
 
@@ -33,7 +36,7 @@ class HeuristicPolicy(object):
                 # If all color piles are already past this number, discard the
                 # card.
                 all_colors_played = True
-                for color in hanabi_env.Colors.COLORS:
+                for color in self.config.colors:
                     if played_cards[color] < number:
                         all_colors_played = False
                 if all_colors_played:
@@ -42,7 +45,7 @@ class HeuristicPolicy(object):
                 # Check if the card's number is playable with respect to any
                 # one of the colors.
                 match = False
-                for color in hanabi_env.Colors.COLORS:
+                for color in self.config.colors:
                     if number == played_cards[color] + 1:
                         match = True
                 if match:
@@ -74,8 +77,7 @@ class HeuristicPolicy(object):
         return play_cards, discard_card
 
 
-    @staticmethod
-    def compute_information(observation):
+    def compute_information(self, observation):
         """
         Return information moves that we think will be helpful, based on the
         cards that we think the other player will play or discard using
@@ -94,9 +96,8 @@ class HeuristicPolicy(object):
            want them to play.  Else, give number information.
         """
         information = []
-        their_cards_to_play, their_card_to_discard = \
-            HeuristicPolicy.compute_play_or_discard(observation.them.info,
-                                                    observation.played_cards)
+        their_cards_to_play, their_card_to_discard = self.compute_play_or_discard(
+                observation.them.info, observation.played_cards)
         # (1)
         # NOTE: Color information is sufficient to prevent the other player from
         # playing this card, since compute_play_or_discard only returns cards to
@@ -112,7 +113,7 @@ class HeuristicPolicy(object):
         card = observation.them.cards[their_card_to_discard]
         if card.number > observation.played_cards[card.color]:
             discard_count = observation.discarded_cards.count(card)
-            if discard_count + 1 == hanabi_env.CARD_COUNTS[card.number - 1]:
+            if discard_count + 1 == self.config.card_counts[card.number - 1]:
                 information.append(hanabi_env.InformNumberMove(card.number))
         if information:
             return information
@@ -148,11 +149,10 @@ class HeuristicPolicy(object):
                     information.append(hanabi_env.InformNumberMove(card.number))
         return information
 
-    @staticmethod
-    def get_move(observation):
-        observation = hanabi_env.GameStateObservation(observation)
+    def get_move(self, observation):
+        observation = hanabi_env.GameStateObservation(self.config, observation)
 
-        play_cards, discard_card = HeuristicPolicy.compute_play_or_discard(
+        play_cards, discard_card = self.compute_play_or_discard(
             observation.you.info, observation.played_cards)
 
         # Pretend to apply the moves that we would play, so we don't inform the
@@ -174,7 +174,7 @@ class HeuristicPolicy(object):
                     observation.played_cards[possible_colors[0]] += 1
 
         if observation.num_tokens > 0:
-            information = HeuristicPolicy.compute_information(observation)
+            information = self.compute_information(observation)
         else:
             information = []
 
@@ -186,8 +186,10 @@ class HeuristicPolicy(object):
             return hanabi_env.DiscardMove(discard_card)
 
     def get_action(self, observation):
-        return (hanabi_env.move_to_sample(HeuristicPolicy.get_move(observation)), )
+        return (hanabi_env.move_to_sample(self.config, self.get_move(observation)), )
 
 if __name__ == "__main__":
     with open("pickled_policies/HeuristicPolicy.pickle", "wb") as f:
-        pickle.dump(HeuristicPolicy(), f)
+        pickle.dump(HeuristicPolicy(hanabi_env.HANABI_CONFIG), f)
+    with open("pickled_policies/MiniHeuristicPolicy.pickle", "wb") as f:
+        pickle.dump(HeuristicPolicy(hanabi_env.MINI_HANABI_CONFIG), f)

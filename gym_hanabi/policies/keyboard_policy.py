@@ -10,45 +10,46 @@ def is_int(s):
         return False
 
 class KeyboardPolicy(object):
-    @staticmethod
-    def usage():
+    def __init__(self, config):
+        self.config = config
+
+    def usage(self):
         return ("usage:\n" +
-                "  discard [0-{}]\n".format(hanabi_env.HAND_SIZE - 1) +
-                "  play    [0-{}]\n".format(hanabi_env.HAND_SIZE - 1) +
-                "  color   [{}]\n".format("|".join(hanabi_env.Colors.COLORS)) +
-                "  number  [1-{}]".format(len(hanabi_env.CARD_COUNTS)))
+                "  discard [0-{}]\n".format(self.config.hand_size - 1) +
+                "  play    [0-{}]\n".format(self.config.hand_size - 1) +
+                "  color   [{}]\n".format("|".join(self.config.colors)) +
+                "  number  [1-{}]".format(len(self.config.card_counts)))
 
-    @staticmethod
-    def valid_card_index(s):
-        return is_int(s) and 0 <= int(s) < hanabi_env.HAND_SIZE
+    def valid_card_index(self, s):
+        return is_int(s) and 0 <= int(s) < self.config.hand_size
 
-    @staticmethod
-    def valid_card_number(s):
-        return is_int(s) and 0 < int(s) <= len(hanabi_env.CARD_COUNTS)
+    def valid_card_number(self, s):
+        return is_int(s) and 0 < int(s) <= len(self.config.card_counts)
 
-    @staticmethod
-    def get_move():
+    def get_move(self):
         parts = input("> ").split()
         if len(parts) != 2:
-            print(KeyboardPolicy.usage())
-            return KeyboardPolicy.get_move()
+            print(self.usage())
+            return self.get_move()
         command, arg = parts
 
-        if command == "discard" and KeyboardPolicy.valid_card_index(arg):
+        if command == "discard" and self.valid_card_index(arg):
             return hanabi_env.DiscardMove(int(arg))
-        elif command == "play" and KeyboardPolicy.valid_card_index(arg):
+        elif command == "play" and self.valid_card_index(arg):
             return hanabi_env.PlayMove(int(arg))
-        elif command == "color" and arg in hanabi_env.Colors.COLORS:
+        elif command == "color" and arg in self.config.colors:
             return hanabi_env.InformColorMove(arg)
-        elif command == "number" and KeyboardPolicy.valid_card_number(arg):
+        elif command == "number" and self.valid_card_number(arg):
             return hanabi_env.InformNumberMove(int(arg))
         else:
-            print(KeyboardPolicy.usage())
-            return KeyboardPolicy.get_move()
+            print(self.usage())
+            return self.get_move()
 
     def get_action(self, _observation):
-        return (hanabi_env.move_to_sample(KeyboardPolicy.get_move()), )
+        return (hanabi_env.move_to_sample(self.config, self.get_move()), )
 
 if __name__ == "__main__":
     with open("pickled_policies/KeyboardPolicy.pickle", "wb") as f:
-        pickle.dump(KeyboardPolicy(), f)
+        pickle.dump(KeyboardPolicy(hanabi_env.HANABI_CONFIG), f)
+    with open("pickled_policies/MiniKeyboardPolicy.pickle", "wb") as f:
+        pickle.dump(KeyboardPolicy(hanabi_env.MINI_HANABI_CONFIG), f)

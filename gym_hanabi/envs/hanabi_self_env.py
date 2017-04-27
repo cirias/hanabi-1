@@ -7,10 +7,10 @@ class HanabiSelfEnv(HanabiEnv):
         # dict.
         empty_info = dict()
 
-        move = sample_to_move(action)
+        move = sample_to_move(self.config, action)
         try:
             reward, done = self.play_move(move)
-            observation = game_state_to_sample(self.game_state)
+            observation = game_state_to_sample(self.config, self.game_state)
             return (observation, reward, done, empty_info)
         except ValueError:
             # The final reward is 0 if we break the rules.

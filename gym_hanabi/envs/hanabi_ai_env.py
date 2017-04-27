@@ -7,15 +7,15 @@ class HanabiAiEnv(HanabiEnv):
         # dict.
         empty_info = dict()
 
-        move = sample_to_move(action)
+        move = sample_to_move(self.config, action)
         try:
             reward, done = self.play_move(move)
             ai_move = None
             if not done:
-                observation = game_state_to_sample(self.game_state)
+                observation = game_state_to_sample(self.config, self.game_state)
                 ai_action = self.ai_policy.get_action(observation)[0]
-                ai_reward, done = self.play_move(sample_to_move(ai_action))
-            observation = game_state_to_sample(self.game_state)
+                ai_reward, done = self.play_move(sample_to_move(self.config, ai_action))
+            observation = game_state_to_sample(self.config, self.game_state)
             return (observation, reward, done, empty_info)
         except ValueError as e:
             # The final reward is 0 if we break the rules.

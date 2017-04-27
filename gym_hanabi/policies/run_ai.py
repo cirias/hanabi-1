@@ -6,7 +6,7 @@ import gym
 import pickle
 
 def main(args):
-    env = gym.make("HanabiAi-v0")
+    env = gym.make(args.env_id)
     env = gym.wrappers.Monitor(env, args.directory, force=args.force)
 
     with open(args.pickled_player_policy, "rb") as f:
@@ -23,6 +23,8 @@ def main(args):
                 env.render()
             action = player_policy.get_action(observation)[0]
             observation, reward, done, info = env.step(action)
+        if args.render:
+            env.render()
 
 def get_parser():
     parser = argparse.ArgumentParser()
@@ -34,6 +36,8 @@ def get_parser():
     parser.add_argument("-n", "--num_games",
         type=int, default=1, help="Number of Hanabi games to play.")
 
+    parser.add_argument("env_id",
+        type=str, help="Environment id (e.g. HanabiAi-v0, MiniHanabiAi-v0.")
     parser.add_argument("pickled_player_policy",
         type=str, help="Pickled player policy file.")
     parser.add_argument("pickled_ai_policy",
