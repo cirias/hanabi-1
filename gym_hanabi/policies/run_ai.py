@@ -37,13 +37,10 @@ def get_parser():
         type=int, default=1, help="Number of Hanabi games to play.")
 
     parser.add_argument("env_id",
-        type=str, help="Environment id (e.g. HanabiAi-v0, MiniHanabiAi-v0.")
-    parser.add_argument("pickled_player_policy",
-        type=str, help="Pickled player policy file.")
-    parser.add_argument("pickled_ai_policy",
-        type=str, help="Pickled ai policy file.")
-    parser.add_argument("directory",
-        type=str, help="Monitoring directory.")
+        choices=["HanabiAi-v0", "MiniHanabiAi-v0"], help="Environment id")
+    parser.add_argument("pickled_player_policy", help="Pickled player policy file.")
+    parser.add_argument("pickled_ai_policy", help="Pickled ai policy file.")
+    parser.add_argument("directory", help="Monitoring directory.")
 
     return parser
 
