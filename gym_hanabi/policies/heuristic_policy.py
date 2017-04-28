@@ -189,7 +189,14 @@ class HeuristicPolicy(object):
         return (hanabi_env.move_to_sample(self.config, self.get_move(observation)), )
 
 if __name__ == "__main__":
-    with open("pickled_policies/HeuristicPolicy.pickle", "wb") as f:
-        pickle.dump(HeuristicPolicy(hanabi_env.HANABI_CONFIG), f)
-    with open("pickled_policies/MiniHeuristicPolicy.pickle", "wb") as f:
-        pickle.dump(HeuristicPolicy(hanabi_env.MINI_HANABI_CONFIG), f)
+    configs_and_names = [
+        (hanabi_env.HANABI_CONFIG, "HeuristicPolicy"),
+        (hanabi_env.MEDIUM_HANABI_CONFIG, "MediumHeuristicPolicy"),
+        (hanabi_env.MINI_HANABI_CONFIG, "MiniHeuristicPolicy"),
+        (hanabi_env.MINI_HANABI_LOTSOFINFO_CONFIG, "MiniHeuristicLotsOfInfoPolicy"),
+        (hanabi_env.MINI_HANABI_LOTSOFTURNS_CONFIG, "MiniHeuristicLotsOfTurnsPolicy"),
+    ]
+
+    for config, name in configs_and_names:
+        with open("pickled_policies/{}.pickle".format(name), "wb") as f:
+            pickle.dump(HeuristicPolicy(config), f)

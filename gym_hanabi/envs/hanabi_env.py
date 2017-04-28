@@ -39,6 +39,15 @@ HANABI_CONFIG = Config(
     2                                            # num_turns_after_last_deal
 )
 
+MEDIUM_HANABI_CONFIG = Config(
+    ["red", "green", "blue", "yellow"], # colors
+    8,                                  # max_tokens
+    4,                                  # max_fuses
+    4,                                  # hand_size
+    [3, 2, 2, 1],                       # card_counts
+    2                                   # num_turns_after_last_deal
+)
+
 MINI_HANABI_CONFIG = Config(
     ["red", "green", "blue"], # colors
     6,                        # max_tokens
@@ -46,6 +55,24 @@ MINI_HANABI_CONFIG = Config(
     3,                        # hand_size
     [2, 2, 1],                # card_counts
     2                         # num_turns_after_last_deal
+)
+
+MINI_HANABI_LOTSOFINFO_CONFIG = Config(
+    ["red", "green", "blue"], # colors
+    1000,                     # max_tokens
+    3,                        # max_fuses
+    3,                        # hand_size
+    [2, 2, 1],                # card_counts
+    2                         # num_turns_after_last_deal
+)
+
+MINI_HANABI_LOTSOFTURNS_CONFIG = Config(
+    ["red", "green", "blue"], # colors
+    6,                        # max_tokens
+    3,                        # max_fuses
+    3,                        # hand_size
+    [2, 2, 1],                # card_counts
+    20                        # num_turns_after_last_deal
 )
 
 ################################################################################
@@ -363,6 +390,7 @@ def sample_to_move(config, sample):
     >>> sample_to_move(HANABI_CONFIG, 15)
     PlayMove(index=0)
     """
+    # print(sample)
     assert 0 <= sample < len(moves(config))
     return moves(config)[sample]
 

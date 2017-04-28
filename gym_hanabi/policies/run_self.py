@@ -3,6 +3,7 @@
 from gym_hanabi.policies import *
 import argparse
 import gym
+import gym_hanabi
 import pickle
 
 def main(args):
@@ -34,7 +35,7 @@ def get_parser():
         type=int, default=1, help="Number of Hanabi games to play.")
 
     parser.add_argument("env_id",
-        choices=["HanabiSelf-v0", "MiniHanabiSelf-v0"], help="Environment id")
+        choices=gym_hanabi.SELF_ENV_IDS, help="Environment id")
     parser.add_argument("pickled_policy", help="Pickled policy file.")
     parser.add_argument("directory", help="Monitoring directory.")
 

@@ -33,15 +33,5 @@ def main(args):
     with open(args.output_policy, "wb") as f:
         pickle.dump(policy, f)
 
-def get_parser():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-p", "--input_policy",
-        default=None, help="Filename of starting pickled policy")
-    parser.add_argument("env_id",
-        choices=["HanabiSelf-v0", "MiniHanabiSelf-v0"], help="Environment id")
-    parser.add_argument("output_policy",
-        help="Filename of final pickled policy")
-    return parser
-
 if __name__ == "__main__":
-    main(get_parser().parse_args())
+    main(gym_hanabi.policies.common.get_self_parser().parse_args())

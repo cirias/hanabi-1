@@ -4,7 +4,6 @@ from rllab.baselines.linear_feature_baseline import LinearFeatureBaseline
 from rllab.envs.gym_env import GymEnv
 from rllab.misc.instrument import run_experiment_lite
 from rllab.policies.categorical_mlp_policy import CategoricalMLPPolicy
-import argparse
 import gym_hanabi
 import pickle
 
@@ -38,16 +37,5 @@ def main(args):
     with open(args.output_policy, "wb") as f:
         pickle.dump(policy, f)
 
-def get_parser():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-p", "--input_policy",
-        default=None, help="Filename of starting pickled policy")
-    parser.add_argument("env_id",
-        choices=["HanabiAi-v0", "MiniHanabiAi-v0"], help="Environment id")
-    parser.add_argument("ai_policy", help="Filename of AI pickled policy")
-    parser.add_argument("output_policy",
-        help="Filename of final pickled policy")
-    return parser
-
 if __name__ == "__main__":
-    main(get_parser().parse_args())
+    main(gym_hanabi.policies.common.get_ai_parser().parse_args())

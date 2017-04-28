@@ -49,7 +49,14 @@ class KeyboardPolicy(object):
         return (hanabi_env.move_to_sample(self.config, self.get_move()), )
 
 if __name__ == "__main__":
-    with open("pickled_policies/KeyboardPolicy.pickle", "wb") as f:
-        pickle.dump(KeyboardPolicy(hanabi_env.HANABI_CONFIG), f)
-    with open("pickled_policies/MiniKeyboardPolicy.pickle", "wb") as f:
-        pickle.dump(KeyboardPolicy(hanabi_env.MINI_HANABI_CONFIG), f)
+    configs_and_names = [
+        (hanabi_env.HANABI_CONFIG, "KeyboardPolicy"),
+        (hanabi_env.MEDIUM_HANABI_CONFIG, "MediumKeyboardPolicy"),
+        (hanabi_env.MINI_HANABI_CONFIG, "MiniKeyboardPolicy"),
+        (hanabi_env.MINI_HANABI_LOTSOFINFO_CONFIG, "MiniKeyboardLotsOfInfoPolicy"),
+        (hanabi_env.MINI_HANABI_LOTSOFTURNS_CONFIG, "MiniKeyboardLotsOfTurnsPolicy"),
+    ]
+
+    for config, name in configs_and_names:
+        with open("pickled_policies/{}.pickle".format(name), "wb") as f:
+            pickle.dump(KeyboardPolicy(config), f)
