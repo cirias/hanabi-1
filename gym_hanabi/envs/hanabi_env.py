@@ -581,7 +581,7 @@ def render_game_state(gs):
             " played:           {}\n".format(" ".join(played_cards)) +
             "{}ai hand:          {}\n".format(ai_turn, render_cards(gs.ai.cards)) +
             " ai info:          {}\n".format(render_infos(gs.ai.info)) +
-            "{}player hand:      {}\n".format(player_turn, render_cards(gs.player.cards, show=False)) +
+            "{}player hand:      {}\n".format(player_turn, render_cards(gs.player.cards, show=True)) +
             " player info:      {}".format(render_infos(gs.player.info)))
 
 ################################################################################
