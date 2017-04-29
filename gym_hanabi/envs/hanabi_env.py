@@ -59,7 +59,7 @@ MINI_HANABI_CONFIG = Config(
 
 MINI_HANABI_LOTSOFINFO_CONFIG = Config(
     ["red", "green", "blue"], # colors
-    1000,                     # max_tokens
+    30,                       # max_tokens
     3,                        # max_fuses
     3,                        # hand_size
     [2, 2, 1],                # card_counts
@@ -72,7 +72,7 @@ MINI_HANABI_LOTSOFTURNS_CONFIG = Config(
     3,                        # max_fuses
     3,                        # hand_size
     [2, 2, 1],                # card_counts
-    20                        # num_turns_after_last_deal
+    15                        # num_turns_after_last_deal
 )
 
 ################################################################################
