@@ -195,6 +195,9 @@ if __name__ == "__main__":
         (hanabi_env.MINI_HANABI_CONFIG, "MiniHeuristicPolicy"),
         (hanabi_env.MINI_HANABI_LOTSOFINFO_CONFIG, "MiniHeuristicLotsOfInfoPolicy"),
         (hanabi_env.MINI_HANABI_LOTSOFTURNS_CONFIG, "MiniHeuristicLotsOfTurnsPolicy"),
+        (hanabi_env.MINI_HANABI_LINEAR_REWARD_CONFIG, "MiniHeuristicLinearRewardPolicy"),
+        (hanabi_env.MINI_HANABI_SQUARED_REWARD_CONFIG, "MiniHeuristicSquaredRewardPolicy"),
+        (hanabi_env.MINI_HANABI_SKEWED_REWARD_CONFIG, "MiniHeuristicSkewedRewardPolicy"),
     ]
 
     for config, name in configs_and_names:

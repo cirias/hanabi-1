@@ -5,6 +5,7 @@ setup(name="gym_hanabi",
       install_requires=[
           "gym",
           "numpy",
+          "progressbar2",
           "six",
           "termcolor",
       ]

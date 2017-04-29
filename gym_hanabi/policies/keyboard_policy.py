@@ -55,6 +55,9 @@ if __name__ == "__main__":
         (hanabi_env.MINI_HANABI_CONFIG, "MiniKeyboardPolicy"),
         (hanabi_env.MINI_HANABI_LOTSOFINFO_CONFIG, "MiniKeyboardLotsOfInfoPolicy"),
         (hanabi_env.MINI_HANABI_LOTSOFTURNS_CONFIG, "MiniKeyboardLotsOfTurnsPolicy"),
+        (hanabi_env.MINI_HANABI_LINEAR_REWARD_CONFIG, "MiniKeyboardLinearRewardPolicy"),
+        (hanabi_env.MINI_HANABI_SQUARED_REWARD_CONFIG, "MiniKeyboardSquaredRewardPolicy"),
+        (hanabi_env.MINI_HANABI_SKEWED_REWARD_CONFIG, "MiniKeyboardSkewedRewardPolicy"),
     ]
 
     for config, name in configs_and_names:

@@ -19,5 +19,5 @@ class HanabiAiEnv(HanabiEnv):
             return (observation, reward, done, empty_info)
         except ValueError as e:
             # The final reward is 0 if we break the rules.
-            reward = -1 * self.game_state.current_reward()
+            reward = -1 * self.game_state.config.current_reward(self.game_state)
             return (None, reward, True, empty_info)

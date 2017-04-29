@@ -38,12 +38,36 @@ register(
     max_episode_steps=200,
 )
 
+register(
+    id='MiniHanabiLinearRewardSelf-v0',
+    entry_point='gym_hanabi.envs:HanabiSelfEnv',
+    kwargs={"config": gym_hanabi.envs.hanabi_env.MINI_HANABI_LINEAR_REWARD_CONFIG},
+    max_episode_steps=200,
+)
+
+register(
+    id='MiniHanabiSquaredRewardSelf-v0',
+    entry_point='gym_hanabi.envs:HanabiSelfEnv',
+    kwargs={"config": gym_hanabi.envs.hanabi_env.MINI_HANABI_SQUARED_REWARD_CONFIG},
+    max_episode_steps=200,
+)
+
+register(
+    id='MiniHanabiSkewedRewardSelf-v0',
+    entry_point='gym_hanabi.envs:HanabiSelfEnv',
+    kwargs={"config": gym_hanabi.envs.hanabi_env.MINI_HANABI_SKEWED_REWARD_CONFIG},
+    max_episode_steps=200,
+)
+
 SELF_ENV_IDS = [
     "HanabiSelf-v0",
     "MediumHanabiSelf-v0",
     "MiniHanabiSelf-v0",
     "MiniHanabiLotsOfInfoSelf-v0",
     "MiniHanabiLotsOfTurnsSelf-v0",
+    "MiniHanabiLinearRewardSelf-v0",
+    "MiniHanabiSquaredRewardSelf-v0",
+    "MiniHanabiSkewedRewardSelf-v0",
 ]
 
 # Ai.
@@ -82,10 +106,34 @@ register(
     max_episode_steps=200,
 )
 
+register(
+    id='MiniHanabiLinearRewardAi-v0',
+    entry_point='gym_hanabi.envs:HanabiAiEnv',
+    kwargs={"config": gym_hanabi.envs.hanabi_env.MINI_HANABI_LINEAR_REWARD_CONFIG},
+    max_episode_steps=200,
+)
+
+register(
+    id='MiniHanabiSquaredRewardAi-v0',
+    entry_point='gym_hanabi.envs:HanabiAiEnv',
+    kwargs={"config": gym_hanabi.envs.hanabi_env.MINI_HANABI_SQUARED_REWARD_CONFIG},
+    max_episode_steps=200,
+)
+
+register(
+    id='MiniHanabiSkewedRewardAi-v0',
+    entry_point='gym_hanabi.envs:HanabiAiEnv',
+    kwargs={"config": gym_hanabi.envs.hanabi_env.MINI_HANABI_SKEWED_REWARD_CONFIG},
+    max_episode_steps=200,
+)
+
 AI_ENV_IDS = [
     "HanabiAi-v0",
     "MediumHanabiAi-v0",
     "MiniHanabiAi-v0",
     "MiniHanabiLotsOfInfoAi-v0",
     "MiniHanabiLotsOfTurnsAi-v0",
+    "MiniHanabiLinearRewardAi-v0",
+    "MiniHanabiSquaredRewardAi-v0",
+    "MiniHanabiSkewedRewardAi-v0",
 ]

@@ -19,6 +19,23 @@ def flatten(xss):
     return [x for xs in xss for x in xs]
 
 ################################################################################
+# Reward Functions
+################################################################################
+def constant_reward(game_state):
+    return game_state.current_score()
+
+def linear_reward(game_state):
+    return sum(sum(range(1, v + 1)) for v in game_state.played_cards.values())
+
+def squared_reward(game_state):
+    f = lambda v: sum(x**2 for x in range(1, v + 1))
+    return sum(f(v) for v in game_state.played_cards.values())
+
+def skewed_reward(game_state):
+    f = lambda v: sum(10**(x-1) for x in range(1, v + 1))
+    return sum(f(v) for v in game_state.played_cards.values())
+
+################################################################################
 # Configuration
 ################################################################################
 Config = collections.namedtuple('Config', [
@@ -28,6 +45,7 @@ Config = collections.namedtuple('Config', [
     "hand_size",                 # int,
     "card_counts",               # int list,
     "num_turns_after_last_deal", # int,
+    "current_reward",            # GameState -> int,
 ])
 
 HANABI_CONFIG = Config(
@@ -36,7 +54,8 @@ HANABI_CONFIG = Config(
     4,                                           # max_fuses
     5,                                           # hand_size
     [3, 2, 2, 2, 1],                             # card_counts
-    2                                            # num_turns_after_last_deal
+    2,                                           # num_turns_after_last_deal
+    constant_reward                              # current_reward
 )
 
 MEDIUM_HANABI_CONFIG = Config(
@@ -45,7 +64,8 @@ MEDIUM_HANABI_CONFIG = Config(
     4,                                  # max_fuses
     4,                                  # hand_size
     [3, 2, 2, 1],                       # card_counts
-    2                                   # num_turns_after_last_deal
+    2,                                  # num_turns_after_last_deal
+    constant_reward                     # current_reward
 )
 
 MINI_HANABI_CONFIG = Config(
@@ -54,7 +74,8 @@ MINI_HANABI_CONFIG = Config(
     3,                        # max_fuses
     3,                        # hand_size
     [2, 2, 1],                # card_counts
-    2                         # num_turns_after_last_deal
+    2,                        # num_turns_after_last_deal
+    constant_reward           # current_reward
 )
 
 MINI_HANABI_LOTSOFINFO_CONFIG = Config(
@@ -63,7 +84,8 @@ MINI_HANABI_LOTSOFINFO_CONFIG = Config(
     3,                        # max_fuses
     3,                        # hand_size
     [2, 2, 1],                # card_counts
-    2                         # num_turns_after_last_deal
+    2,                        # num_turns_after_last_deal
+    constant_reward           # current_reward
 )
 
 MINI_HANABI_LOTSOFTURNS_CONFIG = Config(
@@ -72,7 +94,38 @@ MINI_HANABI_LOTSOFTURNS_CONFIG = Config(
     3,                        # max_fuses
     3,                        # hand_size
     [2, 2, 1],                # card_counts
-    15                        # num_turns_after_last_deal
+    15,                       # num_turns_after_last_deal
+    constant_reward           # current_reward
+)
+
+MINI_HANABI_LINEAR_REWARD_CONFIG = Config(
+    ["red", "green", "blue"], # colors
+    6,                        # max_tokens
+    3,                        # max_fuses
+    3,                        # hand_size
+    [2, 2, 1],                # card_counts
+    2,                        # num_turns_after_last_deal
+    linear_reward             # current_reward
+)
+
+MINI_HANABI_SQUARED_REWARD_CONFIG = Config(
+    ["red", "green", "blue"], # colors
+    6,                        # max_tokens
+    3,                        # max_fuses
+    3,                        # hand_size
+    [2, 2, 1],                # card_counts
+    2,                        # num_turns_after_last_deal
+    squared_reward            # current_reward
+)
+
+MINI_HANABI_SKEWED_REWARD_CONFIG = Config(
+    ["red", "green", "blue"], # colors
+    6,                        # max_tokens
+    3,                        # max_fuses
+    3,                        # hand_size
+    [2, 2, 1],                # card_counts
+    2,                        # num_turns_after_last_deal
+    skewed_reward             # current_reward
 )
 
 ################################################################################
@@ -422,8 +475,11 @@ class GameState(object):
         self.player = Hand([None] * config.hand_size, [None] * config.hand_size)
         self.last_player_move = None
 
-    def current_reward(self):
+    def current_score(self):
         return sum(self.played_cards.values())
+
+    def current_reward(self):
+        return sum(sum(x ** 2 for x in range(1, v + 1)) for v in self.played_cards.values())
 
     def remove_card(self, who, index):
         card = who.cards.pop(index)
@@ -492,11 +548,10 @@ class GameState(object):
             raise ValueError("Unexpected move {}.".format(move))
 
         # Figure out when to end the game.
-        max_reward = len(self.config.colors) * len(self.config.card_counts)
         if self.num_fuses == 0:
             # We used up all the fuses.
             self.num_turns_left = 0
-        elif self.current_reward() == max_reward:
+        elif self.current_score() == len(unique_cards(self.config)):
             # We got all fives!
             self.num_turns_left = 0
         elif len(self.deck) == 0:
@@ -620,11 +675,11 @@ class HanabiEnv(gym.Env):
 
     def play_move(self, move):
         gs = self.game_state
-        reward = -1 * gs.current_reward()
+        reward = -1 * gs.config.current_reward(gs)
         gs.play_move(move)
         # The reward from this move is the total current reward, minus the
         # total reward from the previous game state.
-        reward += gs.current_reward()
+        reward += gs.config.current_reward(gs)
 
         # The game is over if there are no turns left.
         done = gs.num_turns_left == 0
