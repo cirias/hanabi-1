@@ -4,8 +4,10 @@ from rllab.baselines.linear_feature_baseline import LinearFeatureBaseline
 from rllab.envs.gym_env import GymEnv
 from rllab.misc import logger
 from rllab.misc.instrument import run_experiment_lite
+from rllab.policies.categorical_gru_policy import CategoricalGRUPolicy
 from rllab.policies.categorical_mlp_policy import CategoricalMLPPolicy
 import gym_hanabi
+import lasagne.nonlinearities
 import os
 import pickle
 
@@ -21,18 +23,22 @@ def main(args):
         with open(args.input_policy, "rb") as f:
             policy = pickle.load(f)
     else:
-        policy = CategoricalMLPPolicy(env_spec=env.spec, hidden_sizes=(32, 32))
+        policy = CategoricalMLPPolicy(env_spec=env.spec, hidden_sizes=(16, 16))
+        # policy = CategoricalMLPPolicy(env_spec=env.spec, hidden_sizes=(16, 16),
+                # hidden_nonlinearity=lasagne.nonlinearities.rectify)
+        # policy = CategoricalGRUPolicy(env_spec=env.spec)
 
     baseline = LinearFeatureBaseline(env_spec=env.spec)
     algo = TRPO(
         env=env,
         policy=policy,
         baseline=baseline,
-        batch_size=10000,
+        batch_size=4 * 1000,
         max_path_length=env.horizon,
-        n_itr=10,
+        n_itr=50,
         discount=1,
-        step_size=0.1,
+        step_size=0.001,
+        gae_lambda=0.5,
     )
     algo.train()
     with open(args.output_policy, "wb") as f:
