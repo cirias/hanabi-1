@@ -2,12 +2,17 @@ from gym_hanabi.policies import *
 from rllab.algos.trpo import TRPO
 from rllab.baselines.linear_feature_baseline import LinearFeatureBaseline
 from rllab.envs.gym_env import GymEnv
+from rllab.misc import logger
 from rllab.misc.instrument import run_experiment_lite
 from rllab.policies.categorical_mlp_policy import CategoricalMLPPolicy
 import gym_hanabi
+import os
 import pickle
 
 def main(args):
+    logger.set_snapshot_dir(args.snapshot_dir)
+    logger.set_snapshot_mode("none")
+    logger.add_tabular_output(os.path.join(args.snapshot_dir, "tabular.csv"))
     env = GymEnv(args.env_id)
 
     # Load the AI policy.

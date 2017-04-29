@@ -9,6 +9,7 @@ def get_self_parser():
         choices=gym_hanabi.SELF_ENV_IDS, help="Environment id")
     parser.add_argument("output_policy",
         help="Filename of final pickled policy")
+    parser.add_argument("snapshot_dir", help="Snapshot directory")
     return parser
 
 def get_ai_parser():
@@ -20,4 +21,5 @@ def get_ai_parser():
     parser.add_argument("ai_policy", help="Filename of AI pickled policy")
     parser.add_argument("output_policy",
         help="Filename of final pickled policy")
+    parser.add_argument("snapshot_dir", help="Snapshot directory")
     return parser
