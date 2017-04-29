@@ -11,7 +11,9 @@ class HeuristicSimplePolicy(object):
 
     def get_move(self, observation):
         observation = hanabi_env.GameStateObservation(self.config, observation)
-        numcolors = self.config.colors
+        numcolors = len(self.config.colors)
+        SKIPONEDISCARD = False
+        SKIPTWODISCARD = True
 
         # 1) walk through their cards and their info. if there's a one they
         # don't know about, tell them
@@ -30,7 +32,7 @@ class HeuristicSimplePolicy(object):
                 print("played cards keys:", observation.played_cards.keys())
 
                 # a) all ones are already there, so discard any ones
-                if (len(observation.played_cards.keys()) == numcolors):
+                if (len(observation.played_cards.keys()) == numcolors) and not SKIPONEDISCARD:
                     # all ones have been played, discard this one
                     print("discarding a one")
                     return hanabi_env.DiscardMove(cardind)
@@ -54,7 +56,7 @@ class HeuristicSimplePolicy(object):
                 print("played cards keys:", observation.played_cards.keys())
 
                 # a) all ones are already there, so discard any ones
-                if (len(observation.played_cards.keys()) == numcolors):
+                if (len(observation.played_cards.keys()) == numcolors) and not SKIPTWODISCARD:
                     # all ones have been played, discard this one
                     print("discarding a two")
                     return hanabi_env.DiscardMove(cardind)
@@ -89,7 +91,10 @@ class HeuristicSimplePolicy(object):
 
         # at this point, we have no info, random play or random discard? - 
         # TODO: don't randomly guess if there's only one fuse
+#        if observation.num_fuses > 0:  #change back to 1 to do what the comment says
         return hanabi_env.PlayMove(0)
+#        else:
+#        return hanabi_env.DiscardMove(0)
 
     def get_action(self, observation):
         return (hanabi_env.move_to_sample(self.config, self.get_move(observation)), )
