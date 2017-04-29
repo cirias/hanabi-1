@@ -14,6 +14,7 @@ class HeuristicSimplePolicy(object):
         numcolors = len(self.config.colors)
         SKIPONEDISCARD = False
         SKIPTWODISCARD = True
+        SKIPTHREEDISCARD = True
 
         # 1) walk through their cards and their info. if there's a one they
         # don't know about, tell them
@@ -56,6 +57,7 @@ class HeuristicSimplePolicy(object):
                 print("played cards keys:", observation.played_cards.keys())
 
                 # a) all ones are already there, so discard any ones
+                # TODO this discard method is incorrect for cards > 1
                 if (len(observation.played_cards.keys()) == numcolors) and not SKIPTWODISCARD:
                     # all ones have been played, discard this one
                     print("discarding a two")
@@ -80,7 +82,7 @@ class HeuristicSimplePolicy(object):
                 print("played cards keys:", observation.played_cards.keys())
 
                 # a) all ones are already there, so discard any ones - will never happen for 3s
-                if (len(observation.played_cards.keys()) == numcolors):
+                if (len(observation.played_cards.keys()) == numcolors) and not SKIPTHREEDISCARD:
                     # all ones have been played, discard this one
                     print("discarding a two")
                     return hanabi_env.DiscardMove(cardind)
