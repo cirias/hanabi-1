@@ -33,8 +33,6 @@ class HeuristicSimplePolicy(object):
                         print("informing about a", CARDCOUNT)
                         return hanabi_env.InformNumberMove(card.number)
 
-            # 2) color? skip for now because ai doesn't appear to learn to use color info
-
             # 3) if we can't give info about num=CARDCOUNT cards, see if we can place any of them
             for cardind, cardinfo in enumerate(observation.you.info):
                 if cardinfo.number == CARDCOUNT:
@@ -45,17 +43,12 @@ class HeuristicSimplePolicy(object):
                         print("discarding a", CARDCOUNT)
                         return hanabi_env.DiscardMove(cardind)
                     # b) TODO check color (but we don't give color info currently)
-                    else:
-                        # just try playing it
-                        print("playing a", CARDCOUNT)
-                        return hanabi_env.PlayMove(cardind)
+                    # just try playing it
+                    print("playing a", CARDCOUNT)
+                    return hanabi_env.PlayMove(cardind)
 
-        # at this point, we have no info, random play or random discard? - 
-        # TODO: don't randomly guess if there's only one fuse
-#        if observation.num_fuses > 0:  #change back to 1 to do what the comment says
+        # at this point, we have no info, random play (random discard is worse)
         return hanabi_env.PlayMove(0)
-#        else:
-#        return hanabi_env.DiscardMove(0)
 
     def get_action(self, observation):
         return (hanabi_env.move_to_sample(self.config, self.get_move(observation)), )
