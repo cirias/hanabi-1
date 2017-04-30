@@ -311,6 +311,34 @@ def sample_to_cards(config, sample):
     assert len(sample) == len(ucs)
     return flatten([card] * count for (card, count) in zip(ucs, sample))
 
+def information_vector(config):
+    colors = config.colors + [None]
+    counts = range(1, config.card_counts + 1) + [None]
+    return [(color, count) for color in colors for count in counts]
+
+def information_to_vector(config, information):
+    card_colors = (len(config.colors) + 1)
+    card_counts = (len(config.card_counts) + 1)
+    sample = [0] * (card_colors * card_counts)
+    for info in information:
+        if info is None:
+            continue
+
+        if info_number is None:
+            info_number = card_counts - 1
+        else:
+            info_number = info.number - 1
+
+        if info.color is None:
+            info_color = card_colors - 1
+        else:
+            info_color = config.colors.index(info.color)
+
+        index = config.colors.index(info_color) * card_counts + info_number
+        sample[index] += 1
+    return tuple(sample)
+
+
 ################################################################################
 # Information
 ################################################################################
@@ -400,10 +428,13 @@ PlayMove = collections.namedtuple('PlayMove', ['index'])
 def moves(config):
     """Returns a list of all the possible moves."""
     num_numbers = len(config.card_counts)
+    card_colors = (len(config.colors) + 1)
+    card_counts = (len(config.card_counts) + 1)
+    num_cards = card_colors * card_counts
     return ([InformColorMove(c) for c in config.colors] +
             [InformNumberMove(i) for i in range(1, num_numbers + 1)] +
-            [DiscardMove(i) for i in range(config.hand_size)] +
-            [PlayMove(i) for i in range(config.hand_size)])
+            [DiscardMove(i) for i in range(num_cards)] +
+            [PlayMove(i) for i in range(num_cards)])
 
 def move_space(config):
     return gym.spaces.Discrete(len(moves(config)))
@@ -420,15 +451,19 @@ def move_to_sample(config, move):
     15
     """
     num_numbers = len(config.card_counts)
-    offsets = [0, len(config.colors), num_numbers, config.hand_size]
+    card_colors = (len(config.colors) + 1)
+    card_counts = (len(config.card_counts) + 1)
+    num_cards = card_colors * card_counts
+
+    offsets = [0, len(config.colors), num_cards, num_cards]
     if isinstance(move, InformColorMove):
         return sum(offsets[:1]) + config.colors.index(move.color)
     elif isinstance(move, InformNumberMove):
         return sum(offsets[:2]) + range(1, num_numbers + 1).index(move.number)
     elif isinstance(move, DiscardMove):
-        return sum(offsets[:3]) + range(config.hand_size).index(move.index)
+        return sum(offsets[:3]) + range(num_cards).index(move.index)
     elif isinstance(move, PlayMove):
-        return sum(offsets[:4]) + range(config.hand_size).index(move.index)
+        return sum(offsets[:4]) + range(num_cards).index(move.index)
     else:
         raise ValueError("Unexpected move {}.".format(move))
 
@@ -481,12 +516,16 @@ class GameState(object):
     def current_reward(self):
         return sum(sum(x ** 2 for x in range(1, v + 1)) for v in self.played_cards.values())
 
-    def remove_card(self, who, index):
-        card = who.cards.pop(index)
-        who.info.pop(index)
-        if card is None:
-            raise ValueError("Cannot remove non-existent card.")
-        return card
+    def remove_card(self, who, card):
+        for i, my_card in enumerate(who.cards):
+            color_matches = card.color is None or card.color == my_card.color
+            number_matches = card.number is None or card.number == my_card.number
+            if color_matches and number_matches:
+                my_card = who.cards.pop(i)
+                return my_card
+
+        # Could not find a matching card.
+        raise ValueError("Cannot remove non-existent card.")
 
     def deal_card(self, who):
         if len(self.deck) == 0:
@@ -530,14 +569,16 @@ class GameState(object):
             self.play_information_move(who, move)
         elif isinstance(move, DiscardMove):
             who = self.player if self.player_turn else self.ai
-            card = self.remove_card(who, move.index)
+            card = information_vector(self.config)[move.index]
+            card = self.remove_card(who, card)
             self.discarded_cards.append(card)
             if self.num_tokens < self.config.max_tokens:
                 self.num_tokens += 1
             self.deal_card(who)
         elif isinstance(move, PlayMove):
             who = self.player if self.player_turn else self.ai
-            card = self.remove_card(who, move.index)
+            card = information_vector(self.config)[move.index]
+            card = self.remove_card(who, card)
             if card.number == self.played_cards[card.color] + 1:
                 self.played_cards[card.color] += 1
             else:
@@ -630,11 +671,11 @@ def game_state_to_sample(config, game_state):
     return (
         game_state.num_tokens - 1,
         game_state.num_fuses - 1,
-        cards_to_sample(config, game_state.discarded_cards),
-        cards_to_sample(config, played_cards),
-        tuple(card_to_sample(config, card) for card in them.cards),
-        tuple(information_to_sample(config, info) for info in them.info),
-        tuple(information_to_sample(config, info) for info in you.info),
+        information_to_vector(config, game_state.discarded_cards),
+        information_to_vector(config, played_cards),
+        information_to_vector(them.cards),
+        information_to_vector(config, them.info),
+        information_to_vector(config, you.info),
     )
 
 def render_game_state(gs):
