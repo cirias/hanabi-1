@@ -1,5 +1,6 @@
 
-NAME = main
+NAME=main
+#LATEXCMDS="--output-dir=temp"
 
 all: paper
 
@@ -10,8 +11,8 @@ paper:
 	pdflatex $(NAME).tex
 
 clean:
-	rm -f $(NAME).bbl
-	rm -f $(NAME).aux
-	rm -f $(NAME).blg
-	rm -f $(NAME).out
-	rm -f $(NAME).log
+	rm -f *.bbl
+	rm -f *.aux
+	rm -f *.blg
+	rm -f *.out
+	rm -f *.log
