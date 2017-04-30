@@ -16,9 +16,16 @@ class HeuristicSimplePolicy(object):
         skips = [True for x in range(numnumbers)]
         skips[0] = False
 
+        def count_num_played(num):
+            count = 0
+            for color in self.config.colors:
+                if observation.played_cards[color] >= num:
+                    count += 1
+            return count
+
         for CARDCOUNT in range(1, numnumbers+1):
-            # 1) walk through their cards and their info. if there's a one they
-            # don't know about, tell them
+            # 1) walk through their cards and their info. if there's a card 
+            # with number = CARDCOUNT that they don't know about, tell them
             for card, cardinfo in zip(observation.them.cards, observation.them.info):
                 if card.number == CARDCOUNT:
                     print(card, cardinfo)
@@ -26,20 +33,20 @@ class HeuristicSimplePolicy(object):
                         print("informing about a", CARDCOUNT)
                         return hanabi_env.InformNumberMove(card.number)
 
-            # 1, color? skip for now because ai doesn't appear to ever to color info
+            # 2) color? skip for now because ai doesn't appear to learn to use color info
 
-            # if we can't give info about ones, see if we can place any ones
+            # 3) if we can't give info about num=CARDCOUNT cards, see if we can place any of them
             for cardind, cardinfo in enumerate(observation.you.info):
                 if cardinfo.number == CARDCOUNT:
                     print("played cards keys:", observation.played_cards.keys())
 
-                    # a) all ones are already there, so discard any ones
-                    if (len(observation.played_cards.keys()) == numcolors) and not skips[CARDCOUNT-1]:
-                        # all ones have been played, discard this one
+                    if (count_num_played(CARDCOUNT) == numcolors) and not skips[CARDCOUNT-1]:
+                        # all of num=CARDCOUNT are already played, so discard any of num that are left
                         print("discarding a", CARDCOUNT)
                         return hanabi_env.DiscardMove(cardind)
                     # b) TODO check color (but we don't give color info currently)
                     else:
+                        # just try playing it
                         print("playing a", CARDCOUNT)
                         return hanabi_env.PlayMove(cardind)
 
