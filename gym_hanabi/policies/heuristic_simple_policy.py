@@ -13,7 +13,8 @@ class HeuristicSimplePolicy(object):
         observation = hanabi_env.GameStateObservation(self.config, observation)
         numcolors = len(self.config.colors)
         numnumbers = len(self.config.card_counts)
-        skips = [False, True, True]
+        skips = [True for x in range(numnumbers)]
+        skips[0] = False
 
         for CARDCOUNT in range(1, numnumbers+1):
             # 1) walk through their cards and their info. if there's a one they
