@@ -313,10 +313,14 @@ def sample_to_cards(config, sample):
 
 def information_vector(config):
     colors = config.colors + [None]
-    counts = range(1, config.card_counts + 1) + [None]
-    return [(color, count) for color in colors for count in counts]
+    counts = list(range(1, len(config.card_counts) + 1)) + [None]
+    return [Information(color, count) for color in colors for count in counts]
 
 def information_to_vector(config, information):
+    """
+    >>> information_to_vector(MINI_HANABI_CONFIG, [Information("red", 1)])
+    (1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    """
     card_colors = (len(config.colors) + 1)
     card_counts = (len(config.card_counts) + 1)
     sample = [0] * (card_colors * card_counts)
@@ -324,7 +328,7 @@ def information_to_vector(config, information):
         if info is None:
             continue
 
-        if info_number is None:
+        if info.number is None:
             info_number = card_counts - 1
         else:
             info_number = info.number - 1
@@ -334,7 +338,7 @@ def information_to_vector(config, information):
         else:
             info_color = config.colors.index(info.color)
 
-        index = config.colors.index(info_color) * card_counts + info_number
+        index = (info_color * card_counts) + info_number
         sample[index] += 1
     return tuple(sample)
 
@@ -478,7 +482,6 @@ def sample_to_move(config, sample):
     >>> sample_to_move(HANABI_CONFIG, 15)
     PlayMove(index=0)
     """
-    # print(sample)
     assert 0 <= sample < len(moves(config))
     return moves(config)[sample]
 
@@ -522,6 +525,7 @@ class GameState(object):
             number_matches = card.number is None or card.number == my_card.number
             if color_matches and number_matches:
                 my_card = who.cards.pop(i)
+                who.info.pop(i)
                 return my_card
 
         # Could not find a matching card.
@@ -556,6 +560,8 @@ class GameState(object):
 
     def play_move(self, move):
         assert self.num_turns_left != 0
+        assert len(self.ai.cards) == len(self.ai.info)
+        assert len(self.player.cards) == len(self.player.info)
 
         # Record the move.
         if self.player_turn:
@@ -607,14 +613,16 @@ class GameState(object):
 
 def game_state_space(config):
     c = config
+    card_colors = len(config.colors) + 1
+    card_counts = len(config.card_counts) + 1
     return gym.spaces.Tuple((
-        gym.spaces.Discrete(config.max_tokens),                 # Tokens
-        gym.spaces.Discrete(config.max_fuses),                  # Fuses
-        discarded_cards_space(c),                               # Discarded cards
-        played_cards_space(c),                                  # Played cards
-        gym.spaces.Tuple([card_space(c)] * c.hand_size),        # Their cards
-        gym.spaces.Tuple([information_space(c)] * c.hand_size), # Their info
-        gym.spaces.Tuple([information_space(c)] * c.hand_size)  # Your info
+        gym.spaces.Discrete(config.max_tokens),                                                      # Tokens
+        gym.spaces.Discrete(config.max_fuses),                                                       # Fuses
+        gym.spaces.Tuple([gym.spaces.Discrete(config.hand_size + 3)] * (card_colors * card_colors)), # Discarded cards
+        gym.spaces.Tuple([gym.spaces.Discrete(config.hand_size + 3)] * (card_colors * card_colors)), # Played cards
+        gym.spaces.Tuple([gym.spaces.Discrete(config.hand_size + 3)] * (card_colors * card_colors)), # Their cards
+        gym.spaces.Tuple([gym.spaces.Discrete(config.hand_size + 3)] * (card_colors * card_colors)), # Their info
+        gym.spaces.Tuple([gym.spaces.Discrete(config.hand_size + 3)] * (card_colors * card_colors)), # Your info
     ))
 
 class GameStateObservation(object):
@@ -673,7 +681,7 @@ def game_state_to_sample(config, game_state):
         game_state.num_fuses - 1,
         information_to_vector(config, game_state.discarded_cards),
         information_to_vector(config, played_cards),
-        information_to_vector(them.cards),
+        information_to_vector(config, them.cards),
         information_to_vector(config, them.info),
         information_to_vector(config, you.info),
     )
