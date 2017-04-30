@@ -12,84 +12,35 @@ class HeuristicSimplePolicy(object):
     def get_move(self, observation):
         observation = hanabi_env.GameStateObservation(self.config, observation)
         numcolors = len(self.config.colors)
-        SKIPONEDISCARD = False
-        SKIPTWODISCARD = True
-        SKIPTHREEDISCARD = True
+        numnumbers = len(self.config.card_counts)
+        skips = [False, True, True]
 
-        # 1) walk through their cards and their info. if there's a one they
-        # don't know about, tell them
-        for card, cardinfo in zip(observation.them.cards, observation.them.info):
-            if card.number == 1:
-                print(card, cardinfo)
-                if cardinfo.number is None and observation.num_tokens > 0:
-                    print("informing about a one")
-                    return hanabi_env.InformNumberMove(card.number)
+        for CARDCOUNT in range(1, numnumbers+1):
+            # 1) walk through their cards and their info. if there's a one they
+            # don't know about, tell them
+            for card, cardinfo in zip(observation.them.cards, observation.them.info):
+                if card.number == CARDCOUNT:
+                    print(card, cardinfo)
+                    if cardinfo.number is None and observation.num_tokens > 0:
+                        print("informing about a", CARDCOUNT)
+                        return hanabi_env.InformNumberMove(card.number)
 
-        # 1, color? skip for now because ai doesn't appear to ever to color info
+            # 1, color? skip for now because ai doesn't appear to ever to color info
 
-        # if we can't give info about ones, see if we can place any ones
-        for cardind, cardinfo in enumerate(observation.you.info):
-            if cardinfo.number == 1:
-                print("played cards keys:", observation.played_cards.keys())
+            # if we can't give info about ones, see if we can place any ones
+            for cardind, cardinfo in enumerate(observation.you.info):
+                if cardinfo.number == CARDCOUNT:
+                    print("played cards keys:", observation.played_cards.keys())
 
-                # a) all ones are already there, so discard any ones
-                if (len(observation.played_cards.keys()) == numcolors) and not SKIPONEDISCARD:
-                    # all ones have been played, discard this one
-                    print("discarding a one")
-                    return hanabi_env.DiscardMove(cardind)
-                # b) TODO check color (but we don't give color info currently)
-                else:
-                    print("playing a one")
-                    return hanabi_env.PlayMove(cardind)
-
-        # 3) walk through their cards and their info. if there's a two they
-        # don't know about, tell them
-        for card, cardinfo in zip(observation.them.cards, observation.them.info):
-            if card.number == 2:
-                print(card, cardinfo)
-                if cardinfo.number is None and observation.num_tokens > 0:
-                    print("informing about a two")
-                    return hanabi_env.InformNumberMove(card.number)
-
-        # if we can't give info about twos, see if we can place any twos
-        for cardind, cardinfo in enumerate(observation.you.info):
-            if cardinfo.number == 2:
-                print("played cards keys:", observation.played_cards.keys())
-
-                # a) all ones are already there, so discard any ones
-                # TODO this discard method is incorrect for cards > 1
-                if (len(observation.played_cards.keys()) == numcolors) and not SKIPTWODISCARD:
-                    # all ones have been played, discard this one
-                    print("discarding a two")
-                    return hanabi_env.DiscardMove(cardind)
-                # b) TODO check color (but we don't give color info currently)
-                else:
-                    print("playing a two")
-                    return hanabi_env.PlayMove(cardind)
-
-        # 3) walk through their cards and their info. if there's a three they
-        # don't know about, tell them
-        for card, cardinfo in zip(observation.them.cards, observation.them.info):
-            if card.number == 3:
-                print(card, cardinfo)
-                if cardinfo.number is None and observation.num_tokens > 0:
-                    print("informing about a three")
-                    return hanabi_env.InformNumberMove(card.number)
-
-        # if we can't give info about twos, see if we can place any twos
-        for cardind, cardinfo in enumerate(observation.you.info):
-            if cardinfo.number == 3:
-                print("played cards keys:", observation.played_cards.keys())
-
-                # a) all ones are already there, so discard any ones - will never happen for 3s
-                if (len(observation.played_cards.keys()) == numcolors) and not SKIPTHREEDISCARD:
-                    # all ones have been played, discard this one
-                    print("discarding a two")
-                    return hanabi_env.DiscardMove(cardind)
-                # b) TODO check color (but we don't give color info currently)
-                else:
-                    print("playing a three")
-                    return hanabi_env.PlayMove(cardind)
+                    # a) all ones are already there, so discard any ones
+                    if (len(observation.played_cards.keys()) == numcolors) and not skips[CARDCOUNT-1]:
+                        # all ones have been played, discard this one
+                        print("discarding a", CARDCOUNT)
+                        return hanabi_env.DiscardMove(cardind)
+                    # b) TODO check color (but we don't give color info currently)
+                    else:
+                        print("playing a", CARDCOUNT)
+                        return hanabi_env.PlayMove(cardind)
 
         # at this point, we have no info, random play or random discard? - 
         # TODO: don't randomly guess if there's only one fuse
