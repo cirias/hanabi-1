@@ -1,6 +1,7 @@
+import gym
+from gym_hanabi.envs import hanabi
 from gym_hanabi.envs import hanabi_env
 from six.moves import input
-import pickle
 
 def is_int(s):
     try:
@@ -10,8 +11,11 @@ def is_int(s):
         return False
 
 class KeyboardPolicy(object):
-    def __init__(self, config):
-        self.config = config
+    def __init__(self, env):
+        self.env = env
+        self.config = self.env.config
+        self.reward = self.env.reward
+        self.spaces = self.env.spaces
 
     def usage(self):
         return ("usage:\n" +
@@ -34,32 +38,16 @@ class KeyboardPolicy(object):
         command, arg = parts
 
         if command == "discard" and self.valid_card_index(arg):
-            return hanabi_env.DiscardMove(int(arg))
+            return hanabi.DiscardMove(int(arg))
         elif command == "play" and self.valid_card_index(arg):
-            return hanabi_env.PlayMove(int(arg))
+            return hanabi.PlayMove(int(arg))
         elif command == "color" and arg in self.config.colors:
-            return hanabi_env.InformColorMove(arg)
+            return hanabi.InformColorMove(arg)
         elif command == "number" and self.valid_card_number(arg):
-            return hanabi_env.InformNumberMove(int(arg))
+            return hanabi.InformNumberMove(int(arg))
         else:
             print(self.usage())
             return self.get_move()
 
     def get_action(self, _observation):
-        return (hanabi_env.move_to_sample(self.config, self.get_move()), )
-
-if __name__ == "__main__":
-    configs_and_names = [
-        (hanabi_env.HANABI_CONFIG, "KeyboardPolicy"),
-        (hanabi_env.MEDIUM_HANABI_CONFIG, "MediumKeyboardPolicy"),
-        (hanabi_env.MINI_HANABI_CONFIG, "MiniKeyboardPolicy"),
-        (hanabi_env.MINI_HANABI_LOTSOFINFO_CONFIG, "MiniKeyboardLotsOfInfoPolicy"),
-        (hanabi_env.MINI_HANABI_LOTSOFTURNS_CONFIG, "MiniKeyboardLotsOfTurnsPolicy"),
-        (hanabi_env.MINI_HANABI_LINEAR_REWARD_CONFIG, "MiniKeyboardLinearRewardPolicy"),
-        (hanabi_env.MINI_HANABI_SQUARED_REWARD_CONFIG, "MiniKeyboardSquaredRewardPolicy"),
-        (hanabi_env.MINI_HANABI_SKEWED_REWARD_CONFIG, "MiniKeyboardSkewedRewardPolicy"),
-    ]
-
-    for config, name in configs_and_names:
-        with open("pickled_policies/{}.pickle".format(name), "wb") as f:
-            pickle.dump(KeyboardPolicy(config), f)
+        return (self.spaces.action_to_sample(self.get_move()), )
