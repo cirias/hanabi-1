@@ -1,61 +1,100 @@
 from gym.envs.registration import register
+
 import gym_hanabi.envs
 import gym_hanabi.policies
+from gym_hanabi.envs import hanabi
+from gym_hanabi.envs import hanabi_config
+from gym_hanabi.envs import hanabi_reward
+from gym_hanabi.envs import hanabi_spaces
 
 # Self.
 register(
     id='HanabiSelf-v0',
     entry_point='gym_hanabi.envs:HanabiSelfEnv',
-    kwargs={"config": gym_hanabi.envs.hanabi_env.HANABI_CONFIG},
+    kwargs={
+        "config": hanabi_config.HANABI_CONFIG,
+        "reward": hanabi_reward.ConstantReward(),
+        "spaces": hanabi_spaces.NestedSpaces(hanabi_config.HANABI_CONFIG),
+    },
     max_episode_steps=200,
 )
 
 register(
     id='MediumHanabiSelf-v0',
     entry_point='gym_hanabi.envs:HanabiSelfEnv',
-    kwargs={"config": gym_hanabi.envs.hanabi_env.MEDIUM_HANABI_CONFIG},
+    kwargs={
+        "config": hanabi_config.MEDIUM_HANABI_CONFIG,
+        "reward": hanabi_reward.ConstantReward(),
+        "spaces": hanabi_spaces.NestedSpaces(hanabi_config.MEDIUM_HANABI_CONFIG),
+    },
     max_episode_steps=200,
 )
 
 register(
     id='MiniHanabiSelf-v0',
     entry_point='gym_hanabi.envs:HanabiSelfEnv',
-    kwargs={"config": gym_hanabi.envs.hanabi_env.MINI_HANABI_CONFIG},
+    kwargs={
+        "config": hanabi_config.MINI_HANABI_CONFIG,
+        "reward": hanabi_reward.ConstantReward(),
+        "spaces": hanabi_spaces.NestedSpaces(hanabi_config.MINI_HANABI_CONFIG),
+    },
     max_episode_steps=200,
 )
 
 register(
     id='MiniHanabiLotsOfInfoSelf-v0',
     entry_point='gym_hanabi.envs:HanabiSelfEnv',
-    kwargs={"config": gym_hanabi.envs.hanabi_env.MINI_HANABI_LOTSOFINFO_CONFIG},
+    kwargs={
+        "config": hanabi_config.MINI_HANABI_LOTSOFINFO_CONFIG,
+        "reward": hanabi_reward.ConstantReward(),
+        "spaces": hanabi_spaces.NestedSpaces(
+            hanabi_config.MINI_HANABI_LOTSOFINFO_CONFIG),
+    },
     max_episode_steps=200,
 )
 
 register(
     id='MiniHanabiLotsOfTurnsSelf-v0',
     entry_point='gym_hanabi.envs:HanabiSelfEnv',
-    kwargs={"config": gym_hanabi.envs.hanabi_env.MINI_HANABI_LOTSOFTURNS_CONFIG},
+    kwargs={
+        "config": hanabi_config.MINI_HANABI_LOTSOFTURNS_CONFIG,
+        "reward": hanabi_reward.ConstantReward(),
+        "spaces": hanabi_spaces.NestedSpaces(
+            hanabi_config.MINI_HANABI_LOTSOFTURNS_CONFIG),
+    },
     max_episode_steps=200,
 )
 
 register(
     id='MiniHanabiLinearRewardSelf-v0',
     entry_point='gym_hanabi.envs:HanabiSelfEnv',
-    kwargs={"config": gym_hanabi.envs.hanabi_env.MINI_HANABI_LINEAR_REWARD_CONFIG},
+    kwargs={
+        "config": hanabi_config.MINI_HANABI_CONFIG,
+        "reward": hanabi_reward.LinearReward(),
+        "spaces": hanabi_spaces.NestedSpaces(hanabi_config.MINI_HANABI_CONFIG),
+    },
     max_episode_steps=200,
 )
 
 register(
     id='MiniHanabiSquaredRewardSelf-v0',
     entry_point='gym_hanabi.envs:HanabiSelfEnv',
-    kwargs={"config": gym_hanabi.envs.hanabi_env.MINI_HANABI_SQUARED_REWARD_CONFIG},
+    kwargs={
+        "config": hanabi_config.MINI_HANABI_CONFIG,
+        "reward": hanabi_reward.SquaredReward(),
+        "spaces": hanabi_spaces.NestedSpaces(hanabi_config.MINI_HANABI_CONFIG),
+    },
     max_episode_steps=200,
 )
 
 register(
     id='MiniHanabiSkewedRewardSelf-v0',
     entry_point='gym_hanabi.envs:HanabiSelfEnv',
-    kwargs={"config": gym_hanabi.envs.hanabi_env.MINI_HANABI_SKEWED_REWARD_CONFIG},
+    kwargs={
+        "config": hanabi_config.MINI_HANABI_CONFIG,
+        "reward": hanabi_reward.SkewedReward(),
+        "spaces": hanabi_spaces.NestedSpaces(hanabi_config.MINI_HANABI_CONFIG),
+    },
     max_episode_steps=200,
 )
 
@@ -74,56 +113,90 @@ SELF_ENV_IDS = [
 register(
     id='HanabiAi-v0',
     entry_point='gym_hanabi.envs:HanabiAiEnv',
-    kwargs={"config": gym_hanabi.envs.hanabi_env.HANABI_CONFIG},
+    kwargs={
+        "config": hanabi_config.HANABI_CONFIG,
+        "reward": hanabi_reward.ConstantReward(),
+        "spaces": hanabi_spaces.NestedSpaces(hanabi_config.HANABI_CONFIG),
+    },
     max_episode_steps=200,
 )
 
 register(
     id='MediumHanabiAi-v0',
     entry_point='gym_hanabi.envs:HanabiAiEnv',
-    kwargs={"config": gym_hanabi.envs.hanabi_env.MEDIUM_HANABI_CONFIG},
+    kwargs={
+        "config": hanabi_config.MEDIUM_HANABI_CONFIG,
+        "reward": hanabi_reward.ConstantReward(),
+        "spaces": hanabi_spaces.NestedSpaces(hanabi_config.MEDIUM_HANABI_CONFIG),
+    },
     max_episode_steps=200,
 )
 
 register(
     id='MiniHanabiAi-v0',
     entry_point='gym_hanabi.envs:HanabiAiEnv',
-    kwargs={"config": gym_hanabi.envs.hanabi_env.MINI_HANABI_CONFIG},
+    kwargs={
+        "config": hanabi_config.MINI_HANABI_CONFIG,
+        "reward": hanabi_reward.ConstantReward(),
+        "spaces": hanabi_spaces.NestedSpaces(hanabi_config.MINI_HANABI_CONFIG),
+    },
     max_episode_steps=200,
 )
 
 register(
     id='MiniHanabiLotsOfInfoAi-v0',
     entry_point='gym_hanabi.envs:HanabiAiEnv',
-    kwargs={"config": gym_hanabi.envs.hanabi_env.MINI_HANABI_LOTSOFINFO_CONFIG},
+    kwargs={
+        "config": hanabi_config.MINI_HANABI_LOTSOFINFO_CONFIG,
+        "reward": hanabi_reward.ConstantReward(),
+        "spaces": hanabi_spaces.NestedSpaces(
+            hanabi_config.MINI_HANABI_LOTSOFINFO_CONFIG),
+    },
     max_episode_steps=200,
 )
 
 register(
     id='MiniHanabiLotsOfTurnsAi-v0',
     entry_point='gym_hanabi.envs:HanabiAiEnv',
-    kwargs={"config": gym_hanabi.envs.hanabi_env.MINI_HANABI_LOTSOFTURNS_CONFIG},
+    kwargs={
+        "config": hanabi_config.MINI_HANABI_LOTSOFTURNS_CONFIG,
+        "reward": hanabi_reward.ConstantReward(),
+        "spaces": hanabi_spaces.NestedSpaces(
+            hanabi_config.MINI_HANABI_LOTSOFTURNS_CONFIG),
+    },
     max_episode_steps=200,
 )
 
 register(
     id='MiniHanabiLinearRewardAi-v0',
     entry_point='gym_hanabi.envs:HanabiAiEnv',
-    kwargs={"config": gym_hanabi.envs.hanabi_env.MINI_HANABI_LINEAR_REWARD_CONFIG},
+    kwargs={
+        "config": hanabi_config.MINI_HANABI_CONFIG,
+        "reward": hanabi_reward.LinearReward(),
+        "spaces": hanabi_spaces.NestedSpaces(hanabi_config.MINI_HANABI_CONFIG),
+    },
     max_episode_steps=200,
 )
 
 register(
     id='MiniHanabiSquaredRewardAi-v0',
     entry_point='gym_hanabi.envs:HanabiAiEnv',
-    kwargs={"config": gym_hanabi.envs.hanabi_env.MINI_HANABI_SQUARED_REWARD_CONFIG},
+    kwargs={
+        "config": hanabi_config.MINI_HANABI_CONFIG,
+        "reward": hanabi_reward.SquaredReward(),
+        "spaces": hanabi_spaces.NestedSpaces(hanabi_config.MINI_HANABI_CONFIG),
+    },
     max_episode_steps=200,
 )
 
 register(
     id='MiniHanabiSkewedRewardAi-v0',
     entry_point='gym_hanabi.envs:HanabiAiEnv',
-    kwargs={"config": gym_hanabi.envs.hanabi_env.MINI_HANABI_SKEWED_REWARD_CONFIG},
+    kwargs={
+        "config": hanabi_config.MINI_HANABI_CONFIG,
+        "reward": hanabi_reward.SkewedReward(),
+        "spaces": hanabi_spaces.NestedSpaces(hanabi_config.MINI_HANABI_CONFIG),
+    },
     max_episode_steps=200,
 )
 

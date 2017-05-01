@@ -1,18 +1,23 @@
-from gym_hanabi.envs.hanabi_env import *
+from gym_hanabi.envs import hanabi_env
 
-class HanabiSelfEnv(HanabiEnv):
-    def _step(self, action):
-        # Note that for some reason, returning a non-empty info dict causes
-        # rllab to crash. Until we figure out why that is, we use an empty info
-        # dict.
-        empty_info = dict()
+class HanabiSelfEnv(hanabi_env.HanabiEnv):
+    def __init__(self, config, reward, spaces):
+        self.config = config
+        self.reward = reward
+        self.spaces = spaces
+        self.action_space = spaces.action_space()
+        self.observation_space = spaces.observation_space()
+        self._seed()
 
-        move = sample_to_move(self.config, action)
+    def _step(self, action_sample):
         try:
+            move = self.spaces.sample_to_action(action_sample)
             reward, done = self.play_move(move)
-            observation = game_state_to_sample(self.config, self.game_state)
-            return (observation, reward, done, empty_info)
+            observation = self.game_state.to_observation()
+            observation_sample = self.spaces.observation_to_sample(observation)
+            info = {"game_state": self.game_state, "illegal": False}
+            return (observation_sample, reward, done, info)
         except ValueError:
-            # The final reward is 0 if we break the rules.
-            reward = -1 * self.game_state.config.current_reward(self.game_state)
-            return (None, reward, True, empty_info)
+            reward = self.reward.illegal_move_reward(self.game_state)
+            info = {"game_state": self.game_state, "illegal": True}
+            return (None, reward, True, info)

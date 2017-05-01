@@ -1,9 +1,11 @@
-from gym_hanabi.envs import hanabi_env
-import pickle
+from gym_hanabi.envs import hanabi
 
 class HeuristicPolicy(object):
-    def __init__(self, config):
-        self.config = config
+    def __init__(self, env):
+        self.env = env
+        self.config = self.env.config
+        self.reward = self.env.reward
+        self.spaces = self.env.spaces
 
     def compute_play_or_discard(self, all_info, played_cards):
         """
@@ -49,20 +51,21 @@ class HeuristicPolicy(object):
                     if number == played_cards[color] + 1:
                         match = True
                 if match:
-                    # If the check succeeds, add this card to the cards we think
-                    # are playable.
+                    # If the check succeeds, add this card to the cards we
+                    # think are playable.
                     play_cards.append(card)
             elif number == played_cards[color] + 1:
                 # If we have color information, check if the card's number is
-                # playable. If the check succeeds, add this card to the to top of
-                # the cards we think are playable.
+                # playable. If the check succeeds, add this card to the to top
+                # of the cards we think are playable.
                 play_cards = [card] + play_cards
             elif number <= played_cards[color]:
-                # If this color pile is already past this number, discard the card.
+                # If this color pile is already past this number, discard the
+                # card.
                 discard_card = card
 
-        # If we weren't able to find a card that we could definitely discard, then
-        # discard one with the least amount of information.
+        # If we weren't able to find a card that we could definitely discard,
+        # then discard one with the least amount of information.
         less_info = lambda lhs, rhs: not (lhs is not None and rhs is None)
         if discard_card is None:
             discard_card = 0
@@ -70,8 +73,8 @@ class HeuristicPolicy(object):
                 color, number = info
                 if (less_info(color, all_info[discard_card].color) and
                     less_info(number, all_info[discard_card].number)):
-                    # This card has the same or less information than the current card
-                    # we want to discard.
+                    # This card has the same or less information than the
+                    # current card we want to discard.
                     discard_card = card
 
         return play_cards, discard_card
@@ -105,7 +108,7 @@ class HeuristicPolicy(object):
         for card in their_cards_to_play:
             color, number = observation.them.cards[card]
             if number != observation.played_cards[color] + 1:
-                information.append(hanabi_env.InformColorMove(color))
+                information.append(hanabi.InformColorMove(color))
         if information:
             return information
 
@@ -114,7 +117,7 @@ class HeuristicPolicy(object):
         if card.number > observation.played_cards[card.color]:
             discard_count = observation.discarded_cards.count(card)
             if discard_count + 1 == self.config.card_counts[card.number - 1]:
-                information.append(hanabi_env.InformNumberMove(card.number))
+                information.append(hanabi.InformNumberMove(card.number))
         if information:
             return information
 
@@ -125,7 +128,7 @@ class HeuristicPolicy(object):
         for card_index in color_info_cards:
             card = observation.them.cards[card_index]
             if card.number == observation.played_cards[card.color] + 1:
-                information.append(hanabi_env.InformNumberMove(card.number))
+                information.append(hanabi.InformNumberMove(card.number))
         if information:
             return information
 
@@ -144,13 +147,13 @@ class HeuristicPolicy(object):
                 duplicates = [i for i in duplicates if
                         observation.them.info[i].color is None]
                 if duplicates:
-                    information.append(hanabi_env.InformColorMove(card.color))
+                    information.append(hanabi.InformColorMove(card.color))
                 else:
-                    information.append(hanabi_env.InformNumberMove(card.number))
+                    information.append(hanabi.InformNumberMove(card.number))
         return information
 
-    def get_move(self, observation):
-        observation = hanabi_env.GameStateObservation(self.config, observation)
+    def get_move(self, observation_sample):
+        observation = self.spaces.sample_to_observation(observation_sample)
 
         play_cards, discard_card = self.compute_play_or_discard(
             observation.you.info, observation.played_cards)
@@ -165,8 +168,9 @@ class HeuristicPolicy(object):
                 observation.played_cards[color_info] += 1
             else:
                 # If we don't have color information about the card that we'll
-                # play, a color pile whose next number matches may increase. Apply
-                # the hypothetical move if exactly one color pile matches.
+                # play, a color pile whose next number matches may increase.
+                # Apply the hypothetical move if exactly one color pile
+                # matches.
                 possible_colors = [color for color, played_number in
                         observation.played_cards.items() if number_info ==
                         played_number + 1]
@@ -181,25 +185,10 @@ class HeuristicPolicy(object):
         if information:
             return information[0]
         elif play_cards:
-            return hanabi_env.PlayMove(play_cards[0])
+            return hanabi.PlayMove(play_cards[0])
         else:
-            return hanabi_env.DiscardMove(discard_card)
+            return hanabi.DiscardMove(discard_card)
 
     def get_action(self, observation):
-        return (hanabi_env.move_to_sample(self.config, self.get_move(observation)), )
+        return (self.spaces.action_to_sample(self.get_move(observation)), )
 
-if __name__ == "__main__":
-    configs_and_names = [
-        (hanabi_env.HANABI_CONFIG, "HeuristicPolicy"),
-        (hanabi_env.MEDIUM_HANABI_CONFIG, "MediumHeuristicPolicy"),
-        (hanabi_env.MINI_HANABI_CONFIG, "MiniHeuristicPolicy"),
-        (hanabi_env.MINI_HANABI_LOTSOFINFO_CONFIG, "MiniHeuristicLotsOfInfoPolicy"),
-        (hanabi_env.MINI_HANABI_LOTSOFTURNS_CONFIG, "MiniHeuristicLotsOfTurnsPolicy"),
-        (hanabi_env.MINI_HANABI_LINEAR_REWARD_CONFIG, "MiniHeuristicLinearRewardPolicy"),
-        (hanabi_env.MINI_HANABI_SQUARED_REWARD_CONFIG, "MiniHeuristicSquaredRewardPolicy"),
-        (hanabi_env.MINI_HANABI_SKEWED_REWARD_CONFIG, "MiniHeuristicSkewedRewardPolicy"),
-    ]
-
-    for config, name in configs_and_names:
-        with open("pickled_policies/{}.pickle".format(name), "wb") as f:
-            pickle.dump(HeuristicPolicy(config), f)

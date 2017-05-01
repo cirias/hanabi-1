@@ -1,23 +1,31 @@
 from gym_hanabi.envs.hanabi_env import *
 
 class HanabiAiEnv(HanabiEnv):
-    def _step(self, action):
-        # Note that for some reason, returning a non-empty info dict causes
-        # rllab to crash. Until we figure out why that is, we use an empty info
-        # dict.
-        empty_info = dict()
+    def __init__(self, config, reward, spaces, ai_policy=None):
+        self.config = config
+        self.reward = reward
+        self.spaces = spaces
+        self.ai_policy = ai_policy
+        self.action_space = spaces.action_space()
+        self.observation_space = spaces.observation_space()
+        self._seed()
 
-        move = sample_to_move(self.config, action)
+    def _step(self, action):
+        spaces = self.spaces
         try:
+            move = spaces.sample_to_action(action)
             reward, done = self.play_move(move)
-            ai_move = None
             if not done:
-                observation = game_state_to_sample(self.config, self.game_state)
-                ai_action = self.ai_policy.get_action(observation)[0]
-                ai_reward, done = self.play_move(sample_to_move(self.config, ai_action))
-            observation = game_state_to_sample(self.config, self.game_state)
-            return (observation, reward, done, empty_info)
+                observation = self.game_state.to_observation()
+                observation_sample = spaces.observation_to_sample(observation)
+                ai_action_sample = self.ai_policy.get_action(observation_sample)[0]
+                ai_action = spaces.sample_to_action(ai_action_sample)
+                ai_reward, done = self.play_move(ai_action)
+            observation = self.game_state.to_observation()
+            observation_sample = spaces.observation_to_sample(observation)
+            info = {"game_state": self.game_state, "illegal": False}
+            return (observation_sample, reward, done, info)
         except ValueError as e:
-            # The final reward is 0 if we break the rules.
-            reward = -1 * self.game_state.config.current_reward(self.game_state)
-            return (None, reward, True, empty_info)
+            reward = self.reward.illegal_move_reward(self.game_state)
+            info = {"game_state": self.game_state, "illegal": True}
+            return (None, reward, True, info)

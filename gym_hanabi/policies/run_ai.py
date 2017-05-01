@@ -44,7 +44,7 @@ def main(args):
 
         gs = env.env.game_state
         lengths.append(i * 2)
-        rewards.append(gs.config.current_reward(gs))
+        rewards.append(env.env.reward.current_reward(gs))
         scores.append(gs.current_score())
 
     print("average length = {}".format(average(lengths)))
