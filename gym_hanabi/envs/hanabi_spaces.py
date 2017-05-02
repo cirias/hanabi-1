@@ -187,8 +187,8 @@ class NestedSpaces(Spaces):
             numbers = range(1, count + 1)
             played_cards += [hanabi.Card(color, number) for number in numbers]
 
-        players = [tuple(self.information_to_sample(info) for info in obs.players[0].info)]
-        for player in obs.players[1:]:
+        players = []
+        for player in obs.players:
             players.append(tuple(self.card_to_sample(card) for card in player.cards))
             players.append(tuple(self.information_to_sample(info) for info in player.info))
 
@@ -197,6 +197,7 @@ class NestedSpaces(Spaces):
             obs.num_fuses - 1,
             self.cards_to_sample(obs.discarded_cards),
             self.cards_to_sample(played_cards),
+            tuple(self.information_to_sample(i) for i in obs.your_info),
         ) + tuple(players)
 
     @overrides
@@ -205,9 +206,8 @@ class NestedSpaces(Spaces):
          sample_num_fuses,
          sample_discarded_cards,
          sample_played_cards,
-         sample_their_cards,
-         sample_their_info,
-         sample_your_info) = sample
+         sample_your_info,
+         *sample_players) = sample
 
         num_tokens = sample_num_tokens + 1
         num_fuses = sample_num_fuses + 1
@@ -218,23 +218,22 @@ class NestedSpaces(Spaces):
             if number > played_cards[color]:
                 played_cards[color] = number
 
-        # Filter out cards that don't exist, for hands that are smaller than
-        # the maximum hand size.
-        them = hanabi.Hand(
-            [self.sample_to_card(sample) for sample in sample_their_cards],
-            [self.sample_to_information(sample) for sample in sample_their_info])
-        them.cards = [card for card in them.cards if card is not None]
-        them.info = [info for info in them.info if info is not None]
-        assert len(them.cards) == len(them.info), them
+        your_info = [self.sample_to_information(s) for s in sample_your_info]
 
-        you = hanabi.Hand(
-            [None] * self.config.hand_size,
-            [self.sample_to_information(sample) for sample in sample_your_info])
-        you.info = [info for info in you.info if info is not None]
-        you.cards = [None] * len(you.info)
+        # Players hands' are organized like [cards, info, cards, info, ...]
+        assert len(sample_players) % 2 == 0
+        players = []
+        while len(sample_players) != 0:
+            sample_cards = sample_players.pop(0)
+            sample_info = sample_players.pop(0)
+            player = hanabi.Hand(
+                [self.sample_to_card(s) for s in sample_cards],
+                [self.sample_to_information(s) for s in sample_info])
+            assert len(player.cards) == len(player.info), player
+            players.append(player)
 
         return hanabi.Observation(num_tokens, num_fuses, discarded_cards,
-                                  played_cards, them, you)
+                                  played_cards, your_info, players)
 
     def moves(self):
         c = self.config

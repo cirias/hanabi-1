@@ -21,8 +21,10 @@ class KeyboardPolicy(object):
         return ("usage:\n" +
                 "  discard [0-{}]\n".format(self.config.hand_size - 1) +
                 "  play    [0-{}]\n".format(self.config.hand_size - 1) +
-                "  color   [{}]\n".format("|".join(self.config.colors)) +
-                "  number  [1-{}]".format(len(self.config.card_counts)))
+                "  color   [{}] [0-{}]\n".format(
+                    "|".join(self.config.colors), self.config.num_players - 2) +
+                "  number  [1-{}] [0-{}]".format(
+                    len(self.config.card_counts), self.config.num_players - 2))
 
     def valid_card_index(self, s):
         return is_int(s) and 0 <= int(s) < self.config.hand_size
@@ -37,17 +39,22 @@ class KeyboardPolicy(object):
             return self.get_move()
         if len(parts) == 2:
             command, arg = parts
-        else:
+            if command == "discard" and self.valid_card_index(arg):
+                return hanabi.DiscardMove(int(arg))
+            elif command == "play" and self.valid_card_index(arg):
+                return hanabi.PlayMove(int(arg))
+            else:
+                print(self.usage())
+                return self.get_move()
+        elif len(parts) == 3:
             command, arg, player_index = parts
-
-        if command == "discard" and self.valid_card_index(arg):
-            return hanabi.DiscardMove(int(arg))
-        elif command == "play" and self.valid_card_index(arg):
-            return hanabi.PlayMove(int(arg))
-        elif command == "color" and arg in self.config.colors:
-            return hanabi.InformColorMove(arg, int(player_index))
-        elif command == "number" and self.valid_card_number(arg):
-            return hanabi.InformNumberMove(int(arg), int(player_index))
+            if command == "color" and arg in self.config.colors:
+                return hanabi.InformColorMove(arg, int(player_index))
+            elif command == "number" and self.valid_card_number(arg):
+                return hanabi.InformNumberMove(int(arg), int(player_index))
+            else:
+                print(self.usage())
+                return self.get_move()
         else:
             print(self.usage())
             return self.get_move()

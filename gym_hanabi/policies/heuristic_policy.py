@@ -7,6 +7,9 @@ class HeuristicPolicy(object):
         self.reward = self.env.reward
         self.spaces = self.env.spaces
 
+        err = "HeuristicPolicy only supports 2 players."
+        assert self.config.num_players == 2, err
+
     def compute_play_or_discard(self, all_info, played_cards):
         """
         Return cards that we think are playable, and the candidate for a
@@ -98,70 +101,74 @@ class HeuristicPolicy(object):
            for those cards, then give color information for the card we
            want them to play.  Else, give number information.
         """
+        them = observation.players[0]
+        them.cards = [card for card in them.cards if card is not None]
+        them.info = [info for info in them.info if info is not None]
+
         information = []
         their_cards_to_play, their_card_to_discard = self.compute_play_or_discard(
-                observation.them.info, observation.played_cards)
+                them.info, observation.played_cards)
         # (1)
         # NOTE: Color information is sufficient to prevent the other player from
         # playing this card, since compute_play_or_discard only returns cards to
         # play if we have number information.
         for card in their_cards_to_play:
-            color, number = observation.them.cards[card]
+            color, number = them.cards[card]
             if number != observation.played_cards[color] + 1:
-                information.append(hanabi.InformColorMove(color))
+                information.append(hanabi.InformColorMove(color, 0))
         if information:
             return information
 
         # (2)
-        card = observation.them.cards[their_card_to_discard]
+        card = them.cards[their_card_to_discard]
         if card.number > observation.played_cards[card.color]:
             discard_count = observation.discarded_cards.count(card)
             if discard_count + 1 == self.config.card_counts[card.number - 1]:
-                information.append(hanabi.InformNumberMove(card.number))
+                information.append(hanabi.InformNumberMove(card.number, 0))
         if information:
             return information
 
         # (3)
         color_info_cards = [card_index for card_index, info in
-            enumerate(observation.them.info) if info.color is not None and
+            enumerate(them.info) if info.color is not None and
             info.number is None]
         for card_index in color_info_cards:
-            card = observation.them.cards[card_index]
+            card = them.cards[card_index]
             if card.number == observation.played_cards[card.color] + 1:
-                information.append(hanabi.InformNumberMove(card.number))
+                information.append(hanabi.InformNumberMove(card.number, 0))
         if information:
             return information
 
         # (4)
         no_info_cards = [card_index for card_index, info in
-                enumerate(observation.them.info) if info.color is None and
+                enumerate(them.info) if info.color is None and
                 info.number is None]
         for card_index in no_info_cards:
-            card = observation.them.cards[card_index]
+            card = them.cards[card_index]
             if card.number == observation.played_cards[card.color] + 1:
                 # A duplicate has the same number but a different color.
-                duplicates = [i for i, dup in enumerate(observation.them.cards) if
+                duplicates = [i for i, dup in enumerate(them.cards) if
                         dup.number == card.number and dup.color != card.color]
                 # Only give color information about the duplicate if they don't
                 # already have information about its color.
                 duplicates = [i for i in duplicates if
-                        observation.them.info[i].color is None]
+                        them.info[i].color is None]
                 if duplicates:
-                    information.append(hanabi.InformColorMove(card.color))
+                    information.append(hanabi.InformColorMove(card.color, 0))
                 else:
-                    information.append(hanabi.InformNumberMove(card.number))
+                    information.append(hanabi.InformNumberMove(card.number, 0))
         return information
 
     def get_move(self, observation_sample):
         observation = self.spaces.sample_to_observation(observation_sample)
 
         play_cards, discard_card = self.compute_play_or_discard(
-            observation.you.info, observation.played_cards)
+            observation.your_info, observation.played_cards)
 
         # Pretend to apply the moves that we would play, so we don't inform the
         # other player about a card that we might already have.
         for card in play_cards:
-            number_info, color_info = observation.you.info[card]
+            number_info, color_info = observation.your_info[card]
             if color_info is not None:
                 # If we have color information about the card we'll play, that
                 # color pile will definitely increase.

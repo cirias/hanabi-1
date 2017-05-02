@@ -23,9 +23,19 @@ class Hand(object):
     def __str__(self):
         return "({}, {})".format(self.cards, self.info)
 
+    def __repr__(self):
+        return str(self)
+
 Observation = collections.namedtuple(
     "Observation",
-    ["num_tokens", "num_fuses", "discarded_cards", "played_cards", "players", ])
+    [
+        "num_tokens",      # int
+        "num_fuses",       # int
+        "discarded_cards", # cards list
+        "played_cards",    # {color -> int}
+        "your_info",       # Information list
+        "players"          # Hand list
+    ])
 
 ################################################################################
 # Helper Functions
@@ -181,9 +191,11 @@ class GameState(object):
 
     def to_observation(self):
         # Rotate the players so that "you" always appears first.
-        players = self.players[self.player_turn:] + self.players[:self.player_turn]
+        players = (self.players[self.player_turn + 1:] +
+                   self.players[:self.player_turn])
         return Observation(self.num_tokens, self.num_fuses,
-                           self.discarded_cards, self.played_cards, players)
+                           self.discarded_cards, self.played_cards,
+                           self.players[self.player_turn].info, players)
 
     def render_player(self, player_index):
         player = self.players[player_index]

@@ -12,6 +12,9 @@ class HeuristicSimplePolicy(object):
         self.reward = self.env.reward
         self.spaces = self.env.spaces
 
+        err = "HeuristicSimplePolicy only supports 2 players."
+        assert self.config.num_players == 2, err
+
     def get_move(self, observation_sample):
         observation = self.spaces.sample_to_observation(observation_sample)
         numcolors = len(self.config.colors)
@@ -29,13 +32,16 @@ class HeuristicSimplePolicy(object):
         for CARDCOUNT in range(1, numnumbers+1):
             # 1) walk through their cards and their info. if there's a card
             # with number = CARDCOUNT that they don't know about, tell them
-            for card, cardinfo in zip(observation.them.cards, observation.them.info):
+            them = observation.players[0]
+            them.cards = [card for card in them.cards if card is not None]
+            them.info = [info for info in them.info if info is not None]
+            for card, cardinfo in zip(them.cards, them.info):
                 if card.number == CARDCOUNT:
                     if cardinfo.number is None and observation.num_tokens > 0:
-                        return hanabi.InformNumberMove(card.number)
+                        return hanabi.InformNumberMove(card.number, 0)
 
             # 3) if we can't give info about num=CARDCOUNT cards, see if we can place any of them
-            for cardind, cardinfo in enumerate(observation.you.info):
+            for cardind, cardinfo in enumerate(observation.your_info):
                 if cardinfo.number == CARDCOUNT:
 
                     if (count_num_played(CARDCOUNT) == numcolors) and not skips[CARDCOUNT-1]:

@@ -1,5 +1,5 @@
-from heuristic_policy import HeuristicPolicy
-from heuristic_simple_policy import HeuristicSimplePolicy
-from keyboard_policy import KeyboardPolicy
-from random_policy import RandomPolicy
-import common
+import gym_hanabi.policies.common
+from gym_hanabi.policies.heuristic_policy import HeuristicPolicy
+from gym_hanabi.policies.heuristic_simple_policy import HeuristicSimplePolicy
+from gym_hanabi.policies.keyboard_policy import KeyboardPolicy
+from gym_hanabi.policies.random_policy import RandomPolicy

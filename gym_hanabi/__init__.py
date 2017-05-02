@@ -110,7 +110,7 @@ register(
 )
 
 register(
-    id='MiniHanabiFlattenedSpaceSelf3P-v0',
+    id='MiniHanabiFlattenedSpace3PSelf-v0',
     entry_point='gym_hanabi.envs:HanabiSelfEnv',
     kwargs={
         "config": hanabi_config.MINI_HANABI_3P_CONFIG,
@@ -130,7 +130,7 @@ SELF_ENV_IDS = [
     "MiniHanabiSquaredRewardSelf-v0",
     "MiniHanabiSkewedRewardSelf-v0",
     "MiniHanabiFlattenedSpaceSelf-v0",
-    "MiniHanabiFlattenedSpaceSelf3P-v0",
+    "MiniHanabiFlattenedSpace3PSelf-v0",
 ]
 
 # Ai.
