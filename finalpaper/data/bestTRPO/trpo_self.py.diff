@@ -1,0 +1,22 @@
+diff --git a/gym_hanabi/policies/trpo_self.py b/gym_hanabi/policies/trpo_self.py
+index dcb59bd..1f8ff00 100644
+--- a/gym_hanabi/policies/trpo_self.py
++++ b/gym_hanabi/policies/trpo_self.py
+@@ -23,7 +23,7 @@ def main(args):
+         with open(args.input_policy, "rb") as f:
+             policy = pickle.load(f)
+     else:
+-        policy = CategoricalMLPPolicy(env_spec=env.spec, hidden_sizes=(16, 16))
++        policy = CategoricalMLPPolicy(env_spec=env.spec, hidden_sizes=(32, 32))
+         # policy = CategoricalMLPPolicy(env_spec=env.spec, hidden_sizes=(16, 16),
+                 # hidden_nonlinearity=lasagne.nonlinearities.rectify)
+         # policy = CategoricalGRUPolicy(env_spec=env.spec)
+@@ -35,7 +35,7 @@ def main(args):
+         baseline=baseline,
+         batch_size=4 * 1000,
+         max_path_length=env.horizon,
+-        n_itr=50,
++        n_itr=10000,
+         discount=1,
+         step_size=0.001,
+         gae_lambda=0.5,
