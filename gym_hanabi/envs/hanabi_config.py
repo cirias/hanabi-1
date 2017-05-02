@@ -40,14 +40,14 @@ MINI_HANABI_CONFIG = Config(
     num_players=2,
 )
 
-MINI_HANABI_4P_CONFIG = Config(
+MINI_HANABI_3P_CONFIG = Config(
     colors=["red", "green", "blue"],
     max_tokens=6,
     max_fuses=3,
     hand_size=3,
     card_counts=[2, 2, 1],
-    num_turns_after_last_deal=4,
-    num_players=4,
+    num_turns_after_last_deal=3,
+    num_players=3,
 )
 
 MINI_HANABI_LOTSOFINFO_CONFIG = \
