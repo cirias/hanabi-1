@@ -130,12 +130,5 @@ class TestNestedSpaces(unittest.TestCase):
         for action, sample in self.actions_samples:
             self.assertEqual(self.spaces.sample_to_action(None, sample), action)
 
-    def test_upper(self):
-        self.assertEqual('foo'.upper(), 'FOO')
-
-    def test_isupper(self):
-        self.assertTrue('FOO'.isupper())
-        self.assertFalse('Foo'.isupper())
-
 if __name__ == "__main__":
     unittest.main()
