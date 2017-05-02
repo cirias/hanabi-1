@@ -47,12 +47,12 @@ class TestNestedSpaces(unittest.TestCase):
         ]
 
         self.actions_samples = [
-            (hanabi.InformColorMove("red"), 0),
-            (hanabi.InformColorMove("green"), 1),
-            (hanabi.InformColorMove("blue"), 2),
-            (hanabi.InformNumberMove(1), 3),
-            (hanabi.InformNumberMove(2), 4),
-            (hanabi.InformNumberMove(3), 5),
+            (hanabi.InformColorMove("red", 0), 0),
+            (hanabi.InformColorMove("green", 0), 1),
+            (hanabi.InformColorMove("blue", 0), 2),
+            (hanabi.InformNumberMove(1, 0), 3),
+            (hanabi.InformNumberMove(2, 0), 4),
+            (hanabi.InformNumberMove(3, 0), 5),
             (hanabi.DiscardMove(0), 6),
             (hanabi.DiscardMove(1), 7),
             (hanabi.DiscardMove(2), 8),
@@ -128,7 +128,8 @@ class TestNestedSpaces(unittest.TestCase):
 
     def test_sample_to_action(self):
         for action, sample in self.actions_samples:
-            self.assertEqual(self.spaces.sample_to_action(None, sample), action)
+            _cards = None
+            self.assertEqual(self.spaces.sample_to_action(sample, _cards), action)
 
 if __name__ == "__main__":
     unittest.main()
