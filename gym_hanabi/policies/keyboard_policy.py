@@ -32,19 +32,22 @@ class KeyboardPolicy(object):
 
     def get_move(self):
         parts = input("> ").split()
-        if len(parts) != 2:
+        if len(parts) < 2:
             print(self.usage())
             return self.get_move()
-        command, arg = parts
+        if len(parts) == 2:
+            command, arg = parts
+        else:
+            command, arg, player_index = parts
 
         if command == "discard" and self.valid_card_index(arg):
             return hanabi.DiscardMove(int(arg))
         elif command == "play" and self.valid_card_index(arg):
             return hanabi.PlayMove(int(arg))
         elif command == "color" and arg in self.config.colors:
-            return hanabi.InformColorMove(arg)
+            return hanabi.InformColorMove(arg, int(player_index))
         elif command == "number" and self.valid_card_number(arg):
-            return hanabi.InformNumberMove(int(arg))
+            return hanabi.InformNumberMove(int(arg), int(player_index))
         else:
             print(self.usage())
             return self.get_move()

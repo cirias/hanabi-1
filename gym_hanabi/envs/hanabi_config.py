@@ -7,6 +7,7 @@ Config = collections.namedtuple('Config', [
     "hand_size",                 # int,
     "card_counts",               # int list,
     "num_turns_after_last_deal", # int,
+    "num_players",               # int,
 ])
 
 HANABI_CONFIG = Config(
@@ -15,7 +16,8 @@ HANABI_CONFIG = Config(
     max_fuses=4,
     hand_size=5,
     card_counts=[3, 2, 2, 2, 1],
-    num_turns_after_last_deal=2
+    num_turns_after_last_deal=2,
+    num_players=2,
 )
 
 MEDIUM_HANABI_CONFIG = Config(
@@ -24,7 +26,8 @@ MEDIUM_HANABI_CONFIG = Config(
     max_fuses=4,
     hand_size=4,
     card_counts=[3, 2, 2, 1],
-    num_turns_after_last_deal=2
+    num_turns_after_last_deal=2,
+    num_players=2,
 )
 
 MINI_HANABI_CONFIG = Config(
@@ -33,7 +36,18 @@ MINI_HANABI_CONFIG = Config(
     max_fuses=3,
     hand_size=3,
     card_counts=[2, 2, 1],
-    num_turns_after_last_deal=2
+    num_turns_after_last_deal=2,
+    num_players=2,
+)
+
+MINI_HANABI_4P_CONFIG = Config(
+    colors=["red", "green", "blue"],
+    max_tokens=6,
+    max_fuses=3,
+    hand_size=3,
+    card_counts=[2, 2, 1],
+    num_turns_after_last_deal=4,
+    num_players=4,
 )
 
 MINI_HANABI_LOTSOFINFO_CONFIG = \

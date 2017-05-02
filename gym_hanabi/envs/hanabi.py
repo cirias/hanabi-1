@@ -7,8 +7,8 @@ import termcolor
 Card = collections.namedtuple('Card', ['color', 'number'])
 Information = collections.namedtuple('Information', ['color', 'number'])
 
-InformColorMove = collections.namedtuple('InformColorMove', ['color'])
-InformNumberMove = collections.namedtuple('InformNumberMove', ['number'])
+InformColorMove = collections.namedtuple('InformColorMove', ['color', 'player'])
+InformNumberMove = collections.namedtuple('InformNumberMove', ['number', 'player'])
 DiscardMove = collections.namedtuple('DiscardMove', ['index'])
 PlayMove = collections.namedtuple('PlayMove', ['index'])
 
@@ -22,8 +22,7 @@ class Hand(object):
 
 Observation = collections.namedtuple(
     "Observation",
-    ["num_tokens", "num_fuses", "discarded_cards", "played_cards", "them",
-     "you"])
+    ["num_tokens", "num_fuses", "discarded_cards", "played_cards", "players", ])
 
 ################################################################################
 # Helper Functions
@@ -56,6 +55,7 @@ def render_infos(infos):
 ################################################################################
 class GameState(object):
     def __init__(self, config, random):
+        assert config.num_turns_after_last_deal >= config.num_players
         self.config = config
         self.random = random
 
@@ -64,9 +64,8 @@ class GameState(object):
         self.discarded_cards = []
         self.played_cards = collections.defaultdict(int)
         self.num_turns_left = -1
-        self.player_turn = True
-        self.last_player_move = None
-        self.last_ai_move = None
+        self.player_turn = 0
+        self.last_moves = [None] * self.config.num_players
 
         # Shuffle the deck.
         self.deck = [card for color in config.colors
@@ -74,23 +73,16 @@ class GameState(object):
                           for card in [Card(color, number)] * count]
         random.shuffle(self.deck)
 
-        # Deal to the AI.
-        ai = Hand([], [])
-        ai.cards = [self.deck.pop() for _ in range(config.hand_size)]
-        ai.info = [Information(None, None) for _ in range(config.hand_size)]
-        self.ai = ai
-
-        # Deal to the player.
-        player = Hand([], [])
-        player.cards = [self.deck.pop() for _ in range(config.hand_size)]
-        player.info = [Information(None, None) for _ in range(config.hand_size)]
-        self.player = player
+        # Deal to the players.
+        self.players = []
+        for _ in range(self.config.num_players):
+            player = Hand([], [])
+            player.cards = [self.deck.pop() for _ in range(config.hand_size)]
+            player.info = [Information(None, None) for _ in range(config.hand_size)]
+            self.players.append(player)
 
     def get_current_cards(self):
-        if self.player_turn:
-            return self.player.cards
-        else:
-            return self.ai.cards
+        return self.players[self.player_turn].cards
 
     def current_score(self):
         return sum(self.played_cards.values())
@@ -136,24 +128,24 @@ class GameState(object):
         assert self.num_turns_left != 0
 
         # Record the move.
-        if self.player_turn:
-            self.last_player_move = move
-        else:
-            self.last_ai_move = move
+        self.last_moves[self.player_turn] = move
 
         # Play the move.
         if isinstance(move, InformColorMove) or isinstance(move, InformNumberMove):
-            who = self.ai if self.player_turn else self.player
+            if move.player == len(self.players):
+                raise ValueError("Cannot give information to self.")
+            players = self.players[self.player_turn + 1:] + self.players[:self.player_turn]
+            who = players[move.player]
             self.play_information_move(who, move)
         elif isinstance(move, DiscardMove):
-            who = self.player if self.player_turn else self.ai
+            who = self.players[self.player_turn]
             card = self.remove_card(who, move.index)
             self.discarded_cards.append(card)
             if self.num_tokens < self.config.max_tokens:
                 self.num_tokens += 1
             self.deal_card(who)
         elif isinstance(move, PlayMove):
-            who = self.player if self.player_turn else self.ai
+            who = self.players[self.player_turn]
             card = self.remove_card(who, move.index)
             if card.number == self.played_cards[card.color] + 1:
                 self.played_cards[card.color] += 1
@@ -179,13 +171,22 @@ class GameState(object):
             else:
                 self.num_turns_left -= 1
 
-        self.player_turn = not self.player_turn
+        self.player_turn += 1
+        self.player_turn %= self.config.num_players
 
     def to_observation(self):
-        them = self.ai if self.player_turn else self.player
-        you = self.player if self.player_turn else self.ai
+        # Rotate the players so that "you" always appears first.
+        players = self.players[self.player_turn:] + self.players[:self.player_turn]
         return Observation(self.num_tokens, self.num_fuses,
-                           self.discarded_cards, self.played_cards, them, you)
+                           self.discarded_cards, self.played_cards, players)
+
+    def render_player(self, player_index):
+        player = self.players[player_index]
+        return (
+            "{}Player {} hand:        {}\n".format("{}", player_index, render_cards(player.cards)) +
+            " Player {} info:        {}".format(player_index, render_infos(player.info))
+            )
+
 
     def render(self):
         played_cards = []
@@ -195,19 +196,21 @@ class GameState(object):
             else:
                 played_cards.append(termcolor.colored("--", c))
 
-        ai_turn = " " if self.player_turn else "*"
-        player_turn = "*" if self.player_turn else " "
+        last_moves = [" Player {}'s last move: {}".format(i, move) for i, move in enumerate(self.last_moves)]
+        last_moves = "\n".join(last_moves)
+
+        turns = [" " for _ in self.players]
+        turns[self.player_turn] = "*"
+        rendered_players = "\n".join(self.render_player(i) for i in range(len(self.players)))
+        rendered_players = rendered_players.format(*turns)
+
         return (
-            " last_player_move: {}\n".format(self.last_player_move) +
-            " last_ai_move:     {}\n".format(self.last_ai_move) +
-            " deck:             {}\n".format(len(self.deck)) +
-            " tokens:           {}/{}\n".format(self.num_tokens, self.config.max_tokens) +
-            " fuses:            {}/{}\n".format(self.num_fuses, self.config.max_fuses) +
-            " discarded:        {}\n".format(render_cards(self.discarded_cards)) +
-            " played:           {}\n".format(" ".join(played_cards)) +
-            "{}ai hand:          {}\n".format(ai_turn, render_cards(self.ai.cards)) +
-            " ai info:          {}\n".format(render_infos(self.ai.info)) +
-            "{}player hand:      {}\n".format(player_turn, render_cards(self.player.cards)) +
-            " player info:      {}".format(render_infos(self.player.info))
+            last_moves + "\n" +
+            " deck:                 {}\n".format(len(self.deck)) +
+            " tokens:               {}/{}\n".format(self.num_tokens, self.config.max_tokens) +
+            " fuses:                {}/{}\n".format(self.num_fuses, self.config.max_fuses) +
+            " discarded:            {}\n".format(render_cards(self.discarded_cards)) +
+            " played:               {}\n".format(" ".join(played_cards)) +
+            rendered_players
         )
 
