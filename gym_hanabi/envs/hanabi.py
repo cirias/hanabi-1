@@ -20,6 +20,9 @@ class Hand(object):
     def __eq__(self, other):
         return self.cards == other.cards and self.info == other.info
 
+    def __str__(self):
+        return "({}, {})".format(self.cards, self.info)
+
 Observation = collections.namedtuple(
     "Observation",
     ["num_tokens", "num_fuses", "discarded_cards", "played_cards", "players", ])
@@ -56,6 +59,8 @@ def render_infos(infos):
 class GameState(object):
     def __init__(self, config, random):
         assert config.num_turns_after_last_deal >= config.num_players
+        assert config.num_players >= 2
+
         self.config = config
         self.random = random
 
@@ -65,7 +70,7 @@ class GameState(object):
         self.played_cards = collections.defaultdict(int)
         self.num_turns_left = -1
         self.player_turn = 0
-        self.last_moves = [None] * self.config.num_players
+        self.last_moves = [None] * config.num_players
 
         # Shuffle the deck.
         self.deck = [card for color in config.colors
@@ -74,8 +79,9 @@ class GameState(object):
         random.shuffle(self.deck)
 
         # Deal to the players.
+        assert len(self.deck) >= config.num_players * config.hand_size
         self.players = []
-        for _ in range(self.config.num_players):
+        for _ in range(config.num_players):
             player = Hand([], [])
             player.cards = [self.deck.pop() for _ in range(config.hand_size)]
             player.info = [Information(None, None) for _ in range(config.hand_size)]
@@ -132,8 +138,7 @@ class GameState(object):
 
         # Play the move.
         if isinstance(move, InformColorMove) or isinstance(move, InformNumberMove):
-            if move.player == len(self.players):
-                raise ValueError("Cannot give information to self.")
+            assert 0 <= move.player < len(self.players), move
             players = self.players[self.player_turn + 1:] + self.players[:self.player_turn]
             who = players[move.player]
             self.play_information_move(who, move)
