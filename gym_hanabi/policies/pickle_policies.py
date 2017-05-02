@@ -26,6 +26,8 @@ def main():
          "Mini{}SquaredRewardPolicy"),
         (gym.make("MiniHanabiSkewedRewardSelf-v0").env,
          "Mini{}SkewedRewardPolicy"),
+        (gym.make("MiniHanabiFlattenedSpaceSelf-v0").env,
+         "Mini{}FlattenedSpacePolicy"),
     ]
 
     for env, name_template in envs_and_name_templates:

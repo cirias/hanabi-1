@@ -6,13 +6,14 @@ run_self() {
     local readonly pp=pickled_policies
     local readonly policy="$1"
 
-    ./run_self.py HanabiSelf-v0                  "${pp}/${policy}Policy.pickle"
-    ./run_self.py MediumHanabiSelf-v0            "${pp}/Medium${policy}Policy.pickle"
-    ./run_self.py MiniHanabiSelf-v0              "${pp}/Mini${policy}Policy.pickle"
-    ./run_self.py MiniHanabiLotsOfInfoSelf-v0    "${pp}/Mini${policy}LotsOfInfoPolicy.pickle"
-    ./run_self.py MiniHanabiLinearRewardSelf-v0  "${pp}/Mini${policy}LinearRewardPolicy.pickle"
-    ./run_self.py MiniHanabiSquaredRewardSelf-v0 "${pp}/Mini${policy}SquaredRewardPolicy.pickle"
-    ./run_self.py MiniHanabiSkewedRewardSelf-v0  "${pp}/Mini${policy}SkewedRewardPolicy.pickle"
+    ./run_self.py HanabiSelf-v0                     "${pp}/${policy}Policy.pickle"
+    ./run_self.py MediumHanabiSelf-v0               "${pp}/Medium${policy}Policy.pickle"
+    ./run_self.py MiniHanabiSelf-v0                 "${pp}/Mini${policy}Policy.pickle"
+    ./run_self.py MiniHanabiLotsOfInfoSelf-v0       "${pp}/Mini${policy}LotsOfInfoPolicy.pickle"
+    ./run_self.py MiniHanabiLinearRewardSelf-v0     "${pp}/Mini${policy}LinearRewardPolicy.pickle"
+    ./run_self.py MiniHanabiSquaredRewardSelf-v0    "${pp}/Mini${policy}SquaredRewardPolicy.pickle"
+    ./run_self.py MiniHanabiSkewedRewardSelf-v0     "${pp}/Mini${policy}SkewedRewardPolicy.pickle"
+    #./run_self.py MiniHanabiFlattenedSpaceSelf-v0   "${pp}/Mini${policy}FlattenedSpacePolicy.pickle"
 }
 
 run_ai() {

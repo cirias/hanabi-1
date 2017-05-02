@@ -11,7 +11,8 @@ class HanabiSelfEnv(hanabi_env.HanabiEnv):
 
     def _step(self, action_sample):
         try:
-            move = self.spaces.sample_to_action(action_sample)
+            move = self.spaces.sample_to_action(action_sample,
+                    self.game_state.get_current_cards())
             reward, done = self.play_move(move)
             observation = self.game_state.to_observation()
             observation_sample = self.spaces.observation_to_sample(observation)

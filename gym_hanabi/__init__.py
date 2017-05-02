@@ -98,6 +98,17 @@ register(
     max_episode_steps=200,
 )
 
+register(
+    id='MiniHanabiFlattenedSpaceSelf-v0',
+    entry_point='gym_hanabi.envs:HanabiSelfEnv',
+    kwargs={
+        "config": hanabi_config.MINI_HANABI_CONFIG,
+        "reward": hanabi_reward.ConstantReward(),
+        "spaces": hanabi_spaces.FlattenedSpaces(hanabi_config.MINI_HANABI_CONFIG),
+    },
+    max_episode_steps=200,
+)
+
 SELF_ENV_IDS = [
     "HanabiSelf-v0",
     "MediumHanabiSelf-v0",
@@ -107,6 +118,7 @@ SELF_ENV_IDS = [
     "MiniHanabiLinearRewardSelf-v0",
     "MiniHanabiSquaredRewardSelf-v0",
     "MiniHanabiSkewedRewardSelf-v0",
+    "MiniHanabiFlattenedSpaceSelf-v0",
 ]
 
 # Ai.

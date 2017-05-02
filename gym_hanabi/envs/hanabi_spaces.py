@@ -7,6 +7,9 @@ from gym_hanabi.envs import hanabi
 from overrides import overrides
 
 class Spaces(object):
+    def __init__(self, config):
+        self.config = config
+
     def observation_space(self):
         raise NotImplementedError()
 
@@ -22,14 +25,11 @@ class Spaces(object):
     def action_to_sample(self, move):
         raise NotImplementedError()
 
-    def sample_to_action(self, sample):
+    def sample_to_action(self, sample, cards):
         raise NotImplementedError()
 
 
 class NestedSpaces(Spaces):
-    def __init__(self, config):
-        self.config = config
-
     def color_to_sample(self, color):
         assert color in self.config.colors, color
         return self.config.colors.index(color)
@@ -262,10 +262,135 @@ class NestedSpaces(Spaces):
             raise ValueError("Unexpected move {}.".format(move))
 
     @overrides
-    def sample_to_action(self, sample):
+    def sample_to_action(self, sample, cards):
         assert 0 <= sample < len(self.moves()), sample
         return self.moves()[sample]
 
 
 class FlattenedSpaces(Spaces):
-    pass
+    def information_to_sample(self, information):
+        """
+        >>> information_to_sample(MINI_HANABI_CONFIG, [Information("red", 1)])
+        (1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+        """
+        card_colors = len(self.config.colors) + 1
+        card_counts = len(self.config.card_counts) + 1
+        sample = [0] * (card_colors * card_counts)
+        for info in information:
+            if info is None:
+                continue
+
+            if info.number is None:
+                info_number = card_counts - 1
+            else:
+                info_number = info.number - 1
+
+            if info.color is None:
+                info_color = card_colors - 1
+            else:
+                info_color = self.config.colors.index(info.color)
+
+            index = (info_color * card_counts) + info_number
+            sample[index] += 1
+        return tuple(sample)
+
+    def get_information_vector(self):
+        colors = self.config.colors + [None]
+        counts = list(range(1, len(self.config.card_counts) + 1)) + [None]
+        return [hanabi.Information(color, count) for color in colors for count in counts]
+
+
+    def sample_to_information(self, sample):
+        vector = self.get_information_vector(self.config)
+        information = []
+        for info, s in zip(vector, sample):
+            if s > 0:
+                information += [info] * s
+        return information
+
+    @overrides
+    def observation_space(self):
+        card_colors = len(self.config.colors) + 1
+        card_counts = len(self.config.card_counts) + 1
+        vector_size = card_colors * card_counts
+        return gym.spaces.Tuple((
+            gym.spaces.Discrete(self.config.max_tokens + 1),                                    # Tokens
+            gym.spaces.Discrete(self.config.max_fuses),                                         # Fuses
+            gym.spaces.Tuple([gym.spaces.Discrete(self.config.hand_size + 1)] * (vector_size)), # Discarded cards
+            gym.spaces.Tuple([gym.spaces.Discrete(self.config.hand_size + 1)] * (vector_size)), # Played cards
+            gym.spaces.Tuple([gym.spaces.Discrete(self.config.hand_size + 1)] * (vector_size)), # Their cards
+            gym.spaces.Tuple([gym.spaces.Discrete(self.config.hand_size + 1)] * (vector_size)), # Their info
+            gym.spaces.Tuple([gym.spaces.Discrete(self.config.hand_size + 1)] * (vector_size)), # Your info
+        ))
+
+    @overrides
+    def observation_to_sample(self, obs):
+        played_cards = []
+        for color, count in obs.played_cards.items():
+            numbers = range(1, count + 1)
+            played_cards += [hanabi.Card(color, number) for number in numbers]
+
+        return (
+            obs.num_tokens - 1,
+            obs.num_fuses - 1,
+            self.information_to_sample(obs.discarded_cards),
+            self.information_to_sample(played_cards),
+            self.information_to_sample(obs.them.cards),
+            self.information_to_sample(obs.them.info),
+            self.information_to_sample(obs.you.info),
+        )
+
+    def moves(self):
+        num_numbers = len(self.config.card_counts)
+        card_colors = len(self.config.colors) + 1
+        card_counts = len(self.config.card_counts) + 1
+        num_cards = card_colors * card_counts
+        return ([hanabi.InformColorMove(c) for c in self.config.colors] +
+                [hanabi.InformNumberMove(i) for i in range(1, num_numbers + 1)] +
+                [hanabi.DiscardMove(i) for i in range(num_cards)] +
+                [hanabi.PlayMove(i) for i in range(num_cards)])
+
+    @overrides
+    def action_space(self):
+        return gym.spaces.Discrete(len(self.moves()))
+
+    @overrides
+    def action_to_sample(self, move):
+        num_numbers = len(self.config.card_counts)
+        card_colors = len(self.config.colors) + 1
+        card_counts = len(self.config.card_counts) + 1
+        num_cards = card_colors * card_counts
+
+        offsets = [0, len(self.config.colors), num_cards, num_cards]
+        if isinstance(move, hanabi.InformColorMove):
+            return sum(offsets[:1]) + self.config.colors.index(move.color)
+        elif isinstance(move, hanabi.InformNumberMove):
+            return sum(offsets[:2]) + range(1, num_numbers + 1).index(move.number)
+        elif isinstance(move, hanabi.DiscardMove):
+            return sum(offsets[:3]) + range(num_cards).index(move.index)
+        elif isinstance(move, hanabi.PlayMove):
+            return sum(offsets[:4]) + range(num_cards).index(move.index)
+        else:
+            raise ValueError("Unexpected move {}.".format(move))
+
+    def find_matching_card(self, info, cards):
+        for i, my_card in enumerate(cards):
+            color_matches = card.color is None or card.color == my_card.color
+            number_matches = card.number is None or card.number == my_card.number
+            if color_matches and number_matches:
+                return i
+
+        # If we can't find a matching card, return the end fo the list, an
+        # illegal index.
+        return len(cards)
+
+    @overrides
+    def sample_to_action(self, sample, cards):
+        assert 0 <= sample < len(self.moves()), sample
+        move = self.moves()[sample]
+
+        if isinstance(move, hanabi.DiscardMove) or isinstance(move, hanabi.PlayMove):
+            info = self.get_information_vector()[move.index]
+            move.index = self.find_matching_card(info, cards)
+
+        return move

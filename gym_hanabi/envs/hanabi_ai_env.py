@@ -13,14 +13,17 @@ class HanabiAiEnv(HanabiEnv):
     def _step(self, action):
         spaces = self.spaces
         try:
-            move = spaces.sample_to_action(action)
+            move = spaces.sample_to_action(action,
+                    self.game_state.get_current_cards())
             reward, done = self.play_move(move)
             if not done:
                 observation = self.game_state.to_observation()
                 observation_sample = spaces.observation_to_sample(observation)
                 ai_action_sample = self.ai_policy.get_action(observation_sample)[0]
-                ai_action = spaces.sample_to_action(ai_action_sample)
+                ai_action = spaces.sample_to_action(ai_action_sample,
+                        self.game_state.get_current_cards())
                 ai_reward, done = self.play_move(ai_action)
+                reward += ai_reward
             observation = self.game_state.to_observation()
             observation_sample = spaces.observation_to_sample(observation)
             info = {"game_state": self.game_state, "illegal": False}

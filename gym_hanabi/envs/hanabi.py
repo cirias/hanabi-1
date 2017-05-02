@@ -86,6 +86,12 @@ class GameState(object):
         player.info = [Information(None, None) for _ in range(config.hand_size)]
         self.player = player
 
+    def get_current_cards(self):
+        if self.player_turn:
+            return self.player.cards
+        else:
+            return self.ai.cards
+
     def current_score(self):
         return sum(self.played_cards.values())
 
@@ -93,6 +99,8 @@ class GameState(object):
         return len(self.config.colors) * len(self.config.card_counts)
 
     def remove_card(self, who, index):
+        if index >= len(who.cards):
+            raise ValueError("Cannot remove non-existent card.")
         card = who.cards.pop(index)
         who.info.pop(index)
         if card is None:
