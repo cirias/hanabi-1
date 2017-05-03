@@ -351,8 +351,46 @@ class FlattenedSpaces(Spaces):
             self.information_to_sample(obs.your_info)
         ) + tuple(players)
 
+
     def sample_to_observation(self, sample):
-        raise NotImplementedError()
+        (sample_num_tokens,
+         sample_num_fuses,
+         sample_discarded_cards,
+         sample_played_cards,
+         sample_your_info,
+         *sample_players) = sample
+
+        def info_to_card(info):
+            return hanabi.Card(info.color, info.number)
+
+        num_tokens = sample_num_tokens + 1
+        num_fuses = sample_num_fuses + 1
+
+        discarded_cards = self.sample_to_information(sample_discarded_cards)
+        discarded_cards = [info_to_card(info) for info in discarded_cards]
+
+        played_cards = collections.defaultdict(int)
+        for info in self.sample_to_information(sample_played_cards):
+            if info.number > played_cards[info.color]:
+                played_cards[info.color] = info.number
+
+        your_info = self.sample_to_information(sample_your_info)
+
+        # Players hands' are organized like [cards, info, cards, info, ...]
+        assert len(sample_players) % 2 == 0
+        players = []
+        while len(sample_players) != 0:
+            sample_cards = sample_players.pop(0)
+            sample_info = sample_players.pop(0)
+            player = hanabi.Hand(
+                self.sample_to_information(sample_cards),
+                self.sample_to_information(sample_info))
+            player.cards = [info_to_card(info) for info in player.cards]
+            assert len(player.cards) == len(player.info), player
+            players.append(player)
+
+        return hanabi.Observation(num_tokens, num_fuses, discarded_cards,
+                                  played_cards, your_info, players)
 
     def moves(self):
         num_numbers = len(self.config.card_counts)

@@ -14,7 +14,7 @@ run_self() {
     ./run_self.py MiniHanabiLinearRewardSelf-v0     "${pp}/Mini${policy}LinearRewardPolicy.pickle"
     ./run_self.py MiniHanabiSquaredRewardSelf-v0    "${pp}/Mini${policy}SquaredRewardPolicy.pickle"
     ./run_self.py MiniHanabiSkewedRewardSelf-v0     "${pp}/Mini${policy}SkewedRewardPolicy.pickle"
-    # ./run_self.py MiniHanabiFlattenedSpaceSelf-v0   "${pp}/Mini${policy}FlattenedSpacePolicy.pickle"
+    ./run_self.py MiniHanabiFlattenedSpaceSelf-v0   "${pp}/Mini${policy}FlattenedSpacePolicy.pickle"
     set +x
 }
 
@@ -40,7 +40,7 @@ run_ai() {
     ./run_ai.py MiniHanabiLinearRewardAi-v0  "${pp}/Mini${policy}LinearRewardPolicy.pickle"{,}
     ./run_ai.py MiniHanabiSquaredRewardAi-v0 "${pp}/Mini${policy}SquaredRewardPolicy.pickle"{,}
     ./run_ai.py MiniHanabiSkewedRewardAi-v0  "${pp}/Mini${policy}SkewedRewardPolicy.pickle"{,}
-    # ./run_ai MiniHanabiFlattenedSpaceAi-v0   "${pp}/Mini${policy}FlattenedSpacePolicy.pickle"
+    ./run_ai MiniHanabiFlattenedSpaceAi-v0   "${pp}/Mini${policy}FlattenedSpacePolicy.pickle"
     set +x
 }
 
