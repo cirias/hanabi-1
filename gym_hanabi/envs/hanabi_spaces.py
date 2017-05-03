@@ -275,10 +275,6 @@ class NestedSpaces(Spaces):
 
 class FlattenedSpaces(Spaces):
     def information_to_sample(self, information):
-        """
-        >>> information_to_sample(MINI_HANABI_CONFIG, [Information("red", 1)])
-        (1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-        """
         card_colors = len(self.config.colors) + 1
         card_counts = len(self.config.card_counts) + 1
         sample = [0] * (card_colors * card_counts)
@@ -305,37 +301,34 @@ class FlattenedSpaces(Spaces):
         counts = list(range(1, len(self.config.card_counts) + 1)) + [None]
         return [hanabi.Information(color, count) for color in colors for count in counts]
 
-
     def sample_to_information(self, sample):
-        vector = self.get_information_vector(self.config)
+        assert len(sample) == len(self.get_information_vector()), sample
         information = []
-        for info, s in zip(vector, sample):
+        for info, s in zip(self.get_information_vector(), sample):
             if s > 0:
                 information += [info] * s
         return information
 
     @overrides
     def observation_space(self):
-        card_colors = len(self.config.colors) + 1
-        card_counts = len(self.config.card_counts) + 1
-        vector_size = card_colors * card_counts
+        assert self.config.hand_size >= 1, self.config
+        assert self.config.hand_size >= max(self.config.card_counts), self.config
 
-        other_players = [(
-            # Their cards
-            gym.spaces.Tuple([gym.spaces.Discrete(self.config.hand_size + 1)] * (vector_size)),
-            # Their info
-            gym.spaces.Tuple([gym.spaces.Discrete(self.config.hand_size + 1)] * (vector_size)),
-            ) for _ in range(self.config.num_players - 1)]
+        vector_size = len(self.get_information_vector())
+        discrete = gym.spaces.Discrete(self.config.hand_size + 1)
+        card_space = gym.spaces.Tuple([discrete] * vector_size)
+
+        # [(their cards, their info), ...]
+        other_players = [(card_space, card_space)] * (self.config.num_players - 1)
+        # [their cards, their info, ...]
         other_players = tuple(space for player in other_players for space in player)
 
         return gym.spaces.Tuple((
-            gym.spaces.Discrete(self.config.max_tokens + 1),                                    # Tokens
-            gym.spaces.Discrete(self.config.max_fuses),                                         # Fuses
-            gym.spaces.Tuple([gym.spaces.Discrete(self.config.hand_size + 1)] * (vector_size)), # Discarded cards
-            gym.spaces.Tuple([gym.spaces.Discrete(self.config.hand_size + 1)] * (vector_size)), # Played cards
-            gym.spaces.Tuple([gym.spaces.Discrete(self.config.hand_size + 1)] * (vector_size)), # Their cards
-            gym.spaces.Tuple([gym.spaces.Discrete(self.config.hand_size + 1)] * (vector_size)), # Their info
-            gym.spaces.Tuple([gym.spaces.Discrete(self.config.hand_size + 1)] * (vector_size)), # Your info
+            gym.spaces.Discrete(self.config.max_tokens + 1), # Tokens
+            gym.spaces.Discrete(self.config.max_fuses),      # Fuses
+            card_space,                                      # Discarded cards
+            card_space,                                      # Played cards
+            card_space,                                      # Your info
         ) + other_players)
 
     @overrides
@@ -345,29 +338,33 @@ class FlattenedSpaces(Spaces):
             numbers = range(1, count + 1)
             played_cards += [hanabi.Card(color, number) for number in numbers]
 
-        players = [tuple(self.information_to_sample(obs.players[0].info))]
-        for player in obs.players[1:]:
-            players.append(tuple(self.information_to_sample(player.cards)))
-            players.append(tuple(self.information_to_sample(player.info)))
+        players = []
+        for player in obs.players:
+            players.append(self.information_to_sample(player.cards))
+            players.append(self.information_to_sample(player.info))
 
         return (
             obs.num_tokens - 1,
             obs.num_fuses - 1,
             self.information_to_sample(obs.discarded_cards),
             self.information_to_sample(played_cards),
+            self.information_to_sample(obs.your_info)
         ) + tuple(players)
+
+    def sample_to_observation(self, sample):
+        raise NotImplementedError()
 
     def moves(self):
         num_numbers = len(self.config.card_counts)
         card_colors = len(self.config.colors) + 1
         card_counts = len(self.config.card_counts) + 1
         num_cards = card_colors * card_counts
-        return ([hanabi.InformColorMove(color, p) for p in
-                    range(self.config.num_players - 1) for color in
-                    self.config.colors] +
-                [hanabi.InformNumberMove(i, p) for p in
-                    range(self.config.num_players - 1) for i in range(1,
-                        num_numbers + 1)] +
+        return ([hanabi.InformColorMove(color, p)
+                   for p in range(self.config.num_players - 1)
+                   for color in self.config.colors] +
+                [hanabi.InformNumberMove(i, p)
+                   for p in range(self.config.num_players - 1)
+                   for i in range(1, num_numbers + 1)] +
                 [hanabi.DiscardMove(i) for i in range(num_cards)] +
                 [hanabi.PlayMove(i) for i in range(num_cards)])
 
@@ -383,15 +380,24 @@ class FlattenedSpaces(Spaces):
         card_counts = len(self.config.card_counts) + 1
         num_cards = card_colors * card_counts
 
-        offsets = [0, len(c.colors) * (c.num_players - 1), num_numbers * (c.num_players - 1), num_cards]
+        offsets = [
+            0,
+            len(c.colors) * (c.num_players - 1),
+            num_numbers * (c.num_players - 1),
+            num_cards
+        ]
         if isinstance(move, hanabi.InformColorMove):
-            return sum(offsets[:1]) + len(c.colors) * move.player + c.colors.index(move.color)
+            offset = sum(offsets[:1])
+            return offset + len(c.colors) * move.player + c.colors.index(move.color)
         elif isinstance(move, hanabi.InformNumberMove):
-            return sum(offsets[:2]) + num_numbers * move.player + (move.number - 1)
+            offset = sum(offsets[:2])
+            return offset + num_numbers * move.player + (move.number - 1)
         elif isinstance(move, hanabi.DiscardMove):
-            return sum(offsets[:3]) + range(num_cards).index(move.index)
+            offset = sum(offsets[:3])
+            return offset + move.index
         elif isinstance(move, hanabi.PlayMove):
-            return sum(offsets[:4]) + range(num_cards).index(move.index)
+            offset = sum(offsets[:4])
+            return offset + move.index
         else:
             raise ValueError("Unexpected move {}.".format(move))
 
@@ -410,7 +416,6 @@ class FlattenedSpaces(Spaces):
     def sample_to_action(self, sample, cards):
         assert 0 <= sample < len(self.moves()), sample
         move = self.moves()[sample]
-
         if isinstance(move, hanabi.DiscardMove):
             info = self.get_information_vector()[move.index]
             move = hanabi.DiscardMove(index=self.find_matching_card(info, cards))
