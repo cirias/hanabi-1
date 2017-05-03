@@ -25,22 +25,39 @@ def main(args):
         with open(args.input_policy, "rb") as f:
             policy = pickle.load(f)
     else:
-        policy = CategoricalMLPPolicy(env_spec=env.spec, hidden_sizes=(8, 8))
+        policy = CategoricalMLPPolicy(
+            env_spec=env.spec,
+            hidden_sizes=args.hidden_sizes)
 
     baseline = LinearFeatureBaseline(env_spec=env.spec)
     algo = TRPO(
         env=env,
         policy=policy,
         baseline=baseline,
-        batch_size=4000,
+        batch_size=args.batch_size,
         max_path_length=env.horizon,
-        n_itr=50,
-        discount=0.99,
-        step_size=0.01,
+        n_itr=args.n_itr,
+        discount=args.discount,
+        step_size=args.step_size,
+        gae_lambda=args.gae_lambda,
     )
     algo.train()
     with open(args.output_policy, "wb") as f:
         pickle.dump(policy, f)
 
+def get_parser():
+    def parse_tuple(s):
+        return eval(s)
+
+    parser = gym_hanabi.policies.common.get_ai_parser()
+    parser.add_argument("--hidden_sizes", type=parse_tuple, default=(16, 16))
+    parser.add_argument("--batch_size", type=int, default=4000)
+    parser.add_argument("--n_itr", type=int, default=50)
+    parser.add_argument("--discount", type=float, default=1)
+    parser.add_argument("--step_size", type=float, default=0.01)
+    parser.add_argument("--gae_lambda", type=float, default=0.9)
+
+    return parser
+
 if __name__ == "__main__":
-    main(gym_hanabi.policies.common.get_ai_parser().parse_args())
+    main(get_parser().parse_args())
