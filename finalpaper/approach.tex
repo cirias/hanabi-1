@@ -7,26 +7,32 @@ state representations, reward functions, algorithms, and training
 methods.
 
 \subsection{Overview}
+Michael
 
-\subsubsection{Hanabi Game Engine}
+Talk about how the following pieces fit together + OpenAI
 
-One limitation of our game engine is that our information tracking
-implementation does not keep information about which colors/numbers a card
-does not map to. For example, in the situation where ``I was told two cards
-are 3s, so the other cards are not 3s,'' our game engine does not remember that
-the other cards are not 3s.
 
-\subsubsection{Using OpenAI}
+Stephanie 
+\subsubsection{Space reps and Reward Functions}
 
-\subsubsection{Space reps}
+%One limitation of our game engine is that our information tracking
+%implementation does not keep information about which colors/numbers a card
+%does not map to. For example, in the situation where ``I was told two cards
+%are 3s, so the other cards are not 3s,'' our game engine does not remember that
+%the other cards are not 3s.
 
-1) Original
 
-2) New
+1) Nested
 
-\subsubsection{Reward Functions}
+2) Flattened
 
-\subsection{Algorithms}
+Talk about difficulty in fixed state rep/action mapping
+
+\subsection{Training}
+
+Make algs/heuristics subsections here, talk about different combos
+
+\subsubsection{Algorithms}
 
 \subsubsection{TRPO}
 
@@ -43,7 +49,12 @@ guide the previously discussed algorithms into learning a particular strategy.
 Below we discuss two of these heuristic-based players.
 
 \subsubsection{Heuristic}
+
+Stephanie
+
 \subsubsection{SimpleHeuristic}
+
+Sagar
 
 The SimpleHeuristic player attempts to mimic the strategy that our best
 TRPO-trained-on-itself player learns for mini-hanabi.
