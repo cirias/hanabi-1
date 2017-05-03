@@ -42,6 +42,15 @@ sweep_self() {
             "pickled_policies/${name}.pickle" \
             "logs/$name"
     done
+
+    readonly rewards=("" LinearReward SquaredReward SkewedReward)
+    for reward in "${rewards[@]}"; do
+        name="mini_trpo_${reward}_self"
+        python trpo_self.py \
+            MiniHanabi${reward}Self-v0 \
+            "pickled_policies/${name}.pickle" \
+            "logs/$name"
+    done
 }
 
 sweep_ai() {
@@ -85,6 +94,16 @@ sweep_ai() {
             --step_size="$step_size" \
             MiniHanabiAi-v0 \
             "pickled_policies/MiniHeuristicPolicy.pickle" \
+            "pickled_policies/${name}.pickle" \
+            "logs/$name"
+    done
+
+    readonly rewards=("" LinearReward SquaredReward SkewedReward)
+    for reward in "${rewards[@]}"; do
+        name="mini_trpo_${reward}_ai"
+        python trpo_ai.py \
+            MiniHanabi${reward}Ai-v0 \
+            "pickled_policies/MiniHeuristic${reward}Policy.pickle" \
             "pickled_policies/${name}.pickle" \
             "logs/$name"
     done
