@@ -22,14 +22,19 @@
 
 \nipsfinalcopy{}
 
+\newcommand{\figref}[1]{Figure~\label{fig:#1}}
+\newcommand{\secref}[1]{Section~\label{sec:#1}}
+\newcommand{\tabref}[1]{Table~\label{tab:#1}}
+
 \begin{document}
 \maketitle
 
 {\input{abstract}}
 {\input{introduction}}
 {\input{background}}
-{\input{priorwork}}
-{\input{approach}}
+% {\input{approach}}
+{\input{hanabi_mdp}}
+{\input{learning_hanabi}}
 {\input{eval}}
 {\input{conclusion}}
 
