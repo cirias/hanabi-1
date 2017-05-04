@@ -22,8 +22,7 @@ def hist(name, bins, learning, color, filename):
     plt.xticks(range(0, bins - 1, 1 if bins <= 11 else 2))
     plt.xlabel("Score")
     plt.ylabel("Frequency")
-    plt.title("TRPO {} {} policy\nmean={}, stddev={:0.4}"
-              .format(learning, name, mean, stddev))
+    plt.title("mean={}, stddev={:0.4}".format(mean, stddev))
     plt.savefig("{}_{}.pdf".format(name.replace(" ", "_"),
                                    learning.replace(" ", "_")),
                                    bbox_inches="tight")
