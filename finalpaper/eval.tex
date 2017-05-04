@@ -75,6 +75,42 @@ Hanabi are shown in \figref{algos}.
 % learnt} annotated with mean, median, stdev, etc. Comment on our findings.
 % Show a histogram for human performance?
 
+\begin{figure}[ht]
+  \newcommand{\bestsubfig}[1]{%
+    \begin{subfigure}[b]{0.32\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{data/tmp/#1.pdf}
+    \end{subfigure}
+  }
+
+  \centering
+
+  \begin{tabular}{|c|c|c|c|}
+    \cline{2-4}
+    \multicolumn{1}{c}{} &
+    \multicolumn{1}{|c|}{\textbf{Mini Hanabi}} &
+    \textbf{Medium Hanabi} &
+    \textbf{Hanabi} \\\hline
+    %
+    \rotatebox[origin=l]{90}{\textbf{Dynamic Self-Learning}} &
+    \bestsubfig{mini_Hanabi_dynamic_self-learned} &
+    \bestsubfig{medium_Hanabi_dynamic_self-learned} &
+    \bestsubfig{Hanabi_dynamic_self-learned} \\\hline
+    %
+    \rotatebox[origin=l]{90}{\textbf{Guided-Learning}} &
+    \bestsubfig{mini_Hanabi_guided-learned} &
+    \bestsubfig{medium_Hanabi_guided-learned} &
+    \bestsubfig{Hanabi_guided-learned} \\\hline
+    %
+    \rotatebox[origin=l]{90}{\textbf{Static Self-Learning}} &
+    \bestsubfig{mini_Hanabi_static_self-learned} &
+    \bestsubfig{medium_Hanabi_static_self-learned} &
+    \bestsubfig{Hanabi_static_self-learned} \\\hline
+  \end{tabular}
+
+  \caption{}\label{fig:best}
+\end{figure}
+
 \subsection{Policy Behavior}
 \todo{Write.}
 % Describe the behavior of various policies and show that the self-learnt one
