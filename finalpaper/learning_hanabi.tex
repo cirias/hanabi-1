@@ -1,7 +1,42 @@
 \section{Learning to Play Hanabi}\label{sec:learninghanabi}
 
-\todo{Describe the three main ways to learn Hanabi: against itself, against a
-heuristic, and against a fixed version of itself.}
+In this section, we describe how to apply the TRPO, CEM, and CMA-ES
+reinforcement learning algorithms to a Hanabi MDP.
+
+\subsection{Learning Methods}
+The reinforcement learning algorithms we consider begin with a random policy
+and continuously improve the policy by interacting with the environment.
+Because Hanabi is a two-player game, the effect that one player's action has on
+the environment depends critically on the policy of the other player. Thus,
+when we apply a reinforcement learning algorithm to learn one player's policy,
+we have to carefully choose a policy for the other player.
+
+One option is to learn the policy against a hand-written Hanabi policy that
+plays based on some predetermined heuristics. We call this approach
+\emph{guided-learning}. Guided learning allows us to codify our domain-specific
+knowledge about Hanabi to help guide the learned policy. However, the
+effectiveness of a policy learned with guided-learning is limited by the
+effectiveness of the heuristic-based policy. For example, training against a
+completely random heuristic-based policy expectedly produces policies that
+perform poorly.
+
+Another option is to play the policy against itself: a learning method we call
+\emph{dynamic self-learning}. With dynamic self-learning, a single policy acts
+on behalf of both players, and a reinforcement learning algorithm aims to
+learn this single policy. The performance of a dynamically self-learned
+policy is not limited by a hand-written policy. On the other hand, when an
+algorithm begins with a random policy, the policy is forced to play against an
+ineffective policy (i.e.\ itself).
+
+With dynamic self-learning, the behavior of the environment depends on the
+policy, so the environment is repeatedly changed as the policy is improved. In
+effect, this creates a moving target for reinforcement learning algorithms. An
+alternative to dynamic self-learning is \emph{static self-learning} in which a
+policy is played against a fixed previous snapshot of itself. Every $k$
+iterations ($k$ is a hyperparameter), an algorithm creates a checkpoint of the
+policy and uses it to train the policy for the next $k$ iterations. This
+approach is not limited by a hand-written policy and avoids rapidly changing
+the environment.
 
 \subsection{Heuristics}
 \todo{Write.}
