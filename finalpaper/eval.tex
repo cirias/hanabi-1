@@ -1,13 +1,51 @@
 \section{Evaluation[Everyone]}\label{sec:eval}
 
-\todo{Write.}
-% Give an overview of what we did, and explain what questions we're trying to
-% answer.
+We trained multiple reinforcement learning algorithms on multiple variants of
+Hanabi using dynamic self-learning, guided-learning, and static self-learning.
+In this section, we answer questions about how well a learned policy can play
+Hanabi, about how self-learning differs from guided-learning, and about how
+learned policies qualitatively play Hanabi.
+
+\subsection{Hanabi Variants}
+We consider three variants of Hanabi. The first, which we call \emph{Hanabi},
+is a standard game of Hanabi. The second, \emph{medium Hanabi}, is Hanabi with
+only four colors and four numbers (three 1's, two 2's, two 3's, one 4). The
+third, \emph{mini Hanabi}, is Hanabi with three colors, three numbers (two 1's,
+two 2's, one 3), six information tokens, and two fuses.
 
 \subsection{Hyperparameter Tuning and Algorithm Selection}
-\todo{Write.}
-% Show plots of our hyperparameter tuning and discuss which algorithms worked
-% best. Make sure to cite the algorithms and maybe describe them?
+We trained four self-learned mini Hanabi policies using TRPO, VPG, CEM, and
+CMA-ES. In order to compare the four algorithms fairly, we first tuned the
+hyperparameters of each algorithm. For example, \figref{trpo-tuning} shows the
+average reward of a TRPO policy against the number of training iterations for
+various values of hyperparameters.
+
+\begin{figure}[ht]
+  \newcommand{\hyperparamsubfig}[3]{%
+    \begin{subfigure}[t]{0.32\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{data/sweep/reward_vs_iteration_#1.pdf}
+      \caption{#2}\label{fig:#3}
+    \end{subfigure}
+  }
+
+  \centering
+
+  \hyperparamsubfig{hidden_sizes}{the number and size of hidden layers}{}
+  \hyperparamsubfig{batch_size}{batch size}{}
+  \hyperparamsubfig{discount}{discount factor}{}
+
+  \hyperparamsubfig{step_size}{step size}{}
+  \hyperparamsubfig{reward}{reward function}{}
+
+  \caption{
+    Hyperparameter tuning for TRPO trained mini Hanabi policies. The default
+    values for each hyperparameter (if not being varied) are as follows: hidden
+    sizes=$(16, 16)$, discount=$1$, step size=$0.01$, reward function=constant.
+  }\label{fig:trpo-tuning}
+\end{figure}
+
+% TODO: Show histograms for each algorithm along with summary statistics.
 
 \subsection{Self Learning vs Guided Learning}
 \todo{Write.}
