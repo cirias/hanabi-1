@@ -1,4 +1,4 @@
-\section{Hanabi as a Markov Decision Process [Michael+Stephanie]}\label{sec:hanabimdp}
+\section{Hanabi as a Markov Decision Process}\label{sec:hanabimdp}
 
 In this section, we discuss multiple ways to encode Hanabi as an MDP. We then
 discuss how we implement these various models.
@@ -17,7 +17,7 @@ received, and the information the player has received.
 We can encode this state as a collection of nested tuples. Let $[n]$ be the set
 $\set{0, \ldots, n-1}$, and let $A^n$ be the $n$-way Cartesian product $A
 \times_1 A \times_2 \ldots \times_n A$.
-The \emph{nested state space} is 
+The \emph{nested state space} is
 \begin{align*}
     &[(C \times R) + 1] \times
   [I + 1] \times
