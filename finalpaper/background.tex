@@ -1,18 +1,41 @@
-\section{Background [Sagar+Michael]}\label{sec:background}
+\section{Background [Sagar+Michael]}
+\label{sec:background}
 
 \subsection{Hanabi [Sagar]}
 \todo{Describe Hanabi.}
 
 Hanabi \cite{hanabiboardgame, hanabiwiki} is a cooperative card game in which
-two or more players act on partial information towards a common goal. Each
-player can see the cards of all other players, but not their own. On each turn,
-a player can play a card (without looking at it), discard a card, or give
-information to another player. The goal is to play as many cards as possible in
-a specified order.
+two or more players act on partial information towards a common goal. The
+card deck consists of cards labelled with a number, color pair. In regular
+Hanabi, there are five possible colors and five possible numbers, one to five.
+Unlike a traditional card deck, the deck contains duplicates of certain cards;
+as shown in the final row of Figure~\ref{fig:hanabisizes}, a regular Hanabi
+deck contains three cards numbered one, two cards numbered two, and so on, for
+each of the five colors. Each player begins the game with a hand containing
+five cards. Unlike most card games however, players \emph{cannot} see their
+own cards, but \emph{can} see all other player's cards.
 
-Figure \ref{fig:hanabisizes} shows 3 sizes of hanabi that we use in our experiments.
+The collective goal of the game is to play cards on the table such that a stack
+is completed for each color with numbers 1 to 5. Per color, cards must be
+played in a strictly-increasing-by-one order. That is, for any particular
+color, a one can be played only when no cards of that color have already been
+played, a two can only be played when only a one of that color has been played,
+and so on.  If a player elects to play a card that cannot be played - for
+example a blue three when there is already a blue three that has been played
+- one of four ``fuses'' is used up. If the group runs out of these fuses, the
+game ends.
 
-\begin{figure}
+TODO: discard, info
+
+The final score can be computed by summing the top value on each stack, with
+a higher score being more desireable. Each player can see the cards of all
+other players, but not their own. On each turn, a player can play a card
+(without looking at it), discard a card, or give information to another player.
+The goal is to play as many cards as possible in a specified order.
+
+Figure~\ref{fig:hanabisizes} shows 3 sizes of hanabi that we use in our experiments.
+
+\begin{figure}[b]
     \centering
     \begin{tabular}{|c | c | c | c | c | c | c |} \hline
         Name        & Colors & 1s, 2s ... 5s  & Info Tokens & Fuses & Hand Size \\ \hline
@@ -23,6 +46,14 @@ Figure \ref{fig:hanabisizes} shows 3 sizes of hanabi that we use in our experime
     \caption{Hanabi Game Sizes}
     \label{fig:hanabisizes}
 \end{figure}
+
+
+Things to talk about:
+-rules
+-game difficult vs size/number of cards that must be played
+-human results here?
+
+
 
 \subsection{Reinforcement Learning}
 Reinforcement learning is a branch of machine learning distinct from supervised
@@ -55,3 +86,7 @@ which is a four-tuple $(S, A, P, R)$ where
 A reinforcement learning algorithm learns a policy $\pi: S \to A$ which decides
 which action to take in a given state. Reinforcement learning algorithms try to
 learn a policy $\pi$ that maximizes the expected reward as specified by $R$.
+
+
+
+
