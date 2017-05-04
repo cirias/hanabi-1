@@ -17,13 +17,8 @@ two 2's, one 3), six information tokens, and two fuses.
 We consider three reinforcement learning algorithms: TRPO, CEM, and CMA-ES. In
 order to compare the three algorithms fairly, we first tune the hyperparameters
 of each algorithm. For example, \figref{trpo-tuning} shows the average reward
-of a dynamically self-learned mini Hanabi TRPO policy against the number of
+of a TRPO dynamically self-learned mini Hanabi policy against the number of
 training iterations for various values of hyperparameters.
-
-We then trained a self-learned mini Hanabi policy using each algorithm for 1000
-training iterations. Histograms of the policies' scores on 1000 games of mini
-Hanabi are shown in \figref{algos}.
-\todo{Comment on algorithms.}
 
 \begin{figure}[ht]
   \newcommand{\hyperparamsubfig}[3]{%
@@ -52,6 +47,23 @@ Hanabi are shown in \figref{algos}.
   }\label{fig:trpo-tuning}
 \end{figure}
 
+We then train a dynamically self-learned mini Hanabi policy using each
+algorithm for 1000 training iterations. Histograms of the policies' scores on
+1000 games of mini Hanabi are shown in \figref{algos}.
+
+The CMA-ES performs very poorly with an average score of 1.757.  It performs
+only marginally better than a completely random policy which obtains an average
+score of 1.56.
+%
+The CEM policy performs slightly better (but still poorly) with an average
+score of 2.215.
+%
+The TRPO policy performs significantly better than either of the other two
+policies. Most games result in a score of 8, and a significant number of games
+result in a perfect score.
+%
+We conduct the rest of our experiments with TRPO.
+
 \begin{figure}[ht]
   \newcommand{\algosubfig}[3]{%
     \begin{subfigure}[b]{0.32\textwidth}
@@ -62,18 +74,16 @@ Hanabi are shown in \figref{algos}.
   }
 
   \centering
-  \algosubfig{CEM}{CEM}{cem}
   \algosubfig{CMA-ES}{CMA-ES}{cmaes}
+  \algosubfig{CEM}{CEM}{cem}
   \algosubfig{TRPO}{TRPO}{trpo}
   \caption{Mini Hanabi scores on 1000 mini Hanabi games.}\label{fig:algos}
 \end{figure}
 
 \subsection{Self Learning vs Guided Learning}
-\todo{Write.}
-% Show 6 histograms for {hanabi, medium hanabi, mini hanabi} x {dynamic self
-% learnt, guided learnt heuristic, guided learnt simple heuristic, static self
-% learnt} annotated with mean, median, stdev, etc. Comment on our findings.
-% Show a histogram for human performance?
+\todo{Generate real data.}
+\todo{Comment on findings.}
+\todo{Add histograms for hard-coded heuristic policy.}
 
 \begin{figure}[ht]
   \newcommand{\bestsubfig}[1]{%
