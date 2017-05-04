@@ -74,5 +74,13 @@ def main():
     ]
     plot_sweep(reward_name, reward_vals, reward_files)
 
+    space_name = "space"
+    space_vals = ["nested", "flattened"]
+    space_files = [
+        "sweep/mini_trpo__self/tabular.csv",
+        "sweep/mini_trpo_FlattenedSpace_self/tabular.csv",
+    ]
+    plot_sweep(space_name, space_vals, space_files)
+
 if __name__ == "__main__":
     main()
