@@ -3,11 +3,48 @@
 In this section, we discuss multiple ways to encode Hanabi as an MDP. We then
 discuss how we implement these various models.
 
-\subsection{Space Representations [Stephanie]}
-\todo{Discuss our two space representations, their strengths, and their
-weaknesses.}
+\subsection{Space Representations}
+For a player, the state of a Hanabi game includes the number of remaining cards
+in the deck, the number of remaining information tokens, the number of
+remaining fuses, the discarded cards, the played cards, the opponent's hand,
+the information the opponent has received, and the information the player has
+received.
 
-\subsection{Reward Functions [Michael]}
+We can encode this state as a collection of nested tuples. Let $[n]$ be the set
+$\set{0, \ldots, n-1}$, and let $A^n$ be the $n$-way Cartesian product $A
+\times_1 A \times_2 \ldots \times_n A$.
+The \emph{nested state space} is \[
+  [31] \times
+  [9] \times
+  [6] \times
+  {[4]}^{25}
+  \times
+  {[6]}^5
+  \times {([6] \times [6])}^5
+  \times {([5] \times [5])}^5
+  \times {([6] \times [6])}^5
+\]
+where a tuple $(n_c, n_t, n_f, d, p, i_p, c_o, i_o)$ in the nested state space
+encodes:
+\begin{itemize}
+  \setlength\itemsep{0em}
+  \item $n_c$: the number of remaining cards (from 0 to 30);
+  \item $n_t$: the number of remaining information tokens (from 0 to 8);
+  \item $n_f$: the number of remaining fuses (from 0 to 5);
+  \item $d$: a discard count (from 0 to 3) for each of the 25 cards,
+  \item $p$: the highest played number (from 0 to 5) for each of the 5 colors;
+  \item $i_p$: encoded information for each of the player's 5 cards;
+  \item $c_o$: an encoding of each of the opponent's 5 cards; and
+  \item $i_o$: encoded information for each of the opponent's 5 cards.
+\end{itemize}
+There are 20 total actions---inform about any 5 of the colors, inform about any
+5 of the numbers, play any of the 5 cards in a hand, discard any of the 5 cards
+in a hand---so the \emph{nested action space} is $[20]$.
+
+\todo{Discuss the flattened space representations.}
+\todo{Compare and contrast the two space representations.}
+
+\subsection{Reward Functions}
 The \emph{constant reward function} returns a reward of $1$ every time a card
 is played. This reward function has the nice property that the total reward
 accumulated throughout a game is equal to the final score of the game. Thus, a
