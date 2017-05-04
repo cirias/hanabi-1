@@ -44,7 +44,7 @@ sizes by changing the number of colors, numbers, information tokens, fuses, and
 hand size. Figure~\ref{fig:hanabisizes} shows 3 sizes of hanabi that we use in
 our experiments.
 
-\begin{figure}[b]
+\begin{figure}[ht]
     \centering
     \begin{tabular}{|c | c | c | c | c | c | c |} \hline
         Name        & Colors & 1s, 2s ... 5s  & Info Tokens & Fuses & Hand Size \\ \hline
@@ -79,6 +79,7 @@ to play Atari 2600 games~\cite{silver2016mastering,mnih2015human}.
 Formally, we model an environment as a \emph{Markov decision procedure} (MDP)
 which is a four-tuple $(S, A, P, R)$ where
 \begin{itemize}
+  \setlength\itemsep{0em}
   \item
     $S$ is a finite set of \emph{states} (or observations) known as the
     \emph{state space} (or observation space),
@@ -94,7 +95,3 @@ which is a four-tuple $(S, A, P, R)$ where
 A reinforcement learning algorithm learns a policy $\pi: S \to A$ which decides
 which action to take in a given state. Reinforcement learning algorithms try to
 learn a policy $\pi$ that maximizes the expected reward as specified by $R$.
-
-
-
-
