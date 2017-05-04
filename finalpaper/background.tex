@@ -2,7 +2,6 @@
 \label{sec:background}
 
 \subsection{Hanabi [Sagar]}
-\todo{Describe Hanabi.}
 
 Hanabi \cite{hanabiboardgame, hanabiwiki} is a cooperative card game in which
 two or more players act on partial information towards a common goal. The
@@ -25,15 +24,25 @@ example a blue three when there is already a blue three that has been played
 - one of four ``fuses'' is used up. If the group runs out of these fuses, the
 game ends.
 
-TODO: discard, info
+In addition to playing cards, players can inform other players about cards
+in their hand. An inform move involves one player providing one other player
+with information about their hand. This information can contain either number
+of color information, but not both. Furthermore, this information must be complete;
+the player must tell the other player about all cards of the particular number or
+color they are informing about. When a player makes an inform move, one info
+token is used. In regular Hanabi, the group begins with eight info tokens.
 
-The final score can be computed by summing the top value on each stack, with
-a higher score being more desireable. Each player can see the cards of all
-other players, but not their own. On each turn, a player can play a card
-(without looking at it), discard a card, or give information to another player.
-The goal is to play as many cards as possible in a specified order.
+The final type of move that a player may move is to discard a card. When a card
+is discarded, one info token is returned to the group.
 
-Figure~\ref{fig:hanabisizes} shows 3 sizes of hanabi that we use in our experiments.
+The game ends either when all fuses are used up, all cards are played (a perfect
+game), or when the deck is empty and all players have played one additional
+move after the last card was drawn. The final score can be computed by summing
+the top value on each stack, with a higher score being more desireable. In addition
+to the regular version described here, Hanabi can also be adjusted to different
+sizes by changing the number of colors, numbers, information tokens, fuses, and 
+hand size. Figure~\ref{fig:hanabisizes} shows 3 sizes of hanabi that we use in
+our experiments.
 
 \begin{figure}[b]
     \centering
@@ -48,10 +57,9 @@ Figure~\ref{fig:hanabisizes} shows 3 sizes of hanabi that we use in our experime
 \end{figure}
 
 
-Things to talk about:
--rules
--game difficult vs size/number of cards that must be played
--human results here?
+% Things to talk about:
+% TODO, maybe: -game difficult vs size/number of cards that must be played
+% -human results here?
 
 
 
