@@ -50,6 +50,11 @@ def main(args):
     print("average length = {}".format(average(lengths)))
     print("average reward = {}".format(average(rewards)))
     print("average score  = {}".format(average(scores)))
+    if args.output != "":
+        header = ["length","reward","score"]
+        assert len(lengths) == len(rewards) == len(scores)
+        data = list(zip(lengths, rewards, scores))
+        gym_hanabi.policies.common.write_csv(args.output, header, data)
 
 def get_parser():
     parser = argparse.ArgumentParser()
@@ -58,6 +63,8 @@ def get_parser():
         action="store_true", help="Render the game.")
     parser.add_argument("-n", "--num_games",
         type=int, default=1, help="Number of Hanabi games to play.")
+    parser.add_argument("-o", "--output",
+        default="", help="File to write output.")
 
     parser.add_argument("env_id",
         choices=gym_hanabi.AI_ENV_IDS, help="Environment id")

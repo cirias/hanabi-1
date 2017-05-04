@@ -1,5 +1,14 @@
+import csv
+
 import argparse
 import gym_hanabi
+
+def write_csv(filename, header, rows):
+    with open(filename, "w") as f:
+        writer = csv.writer(f)
+        writer.writerow(header)
+        for row in rows:
+            writer.writerow([str(x) for x in row])
 
 def get_self_parser():
     parser = argparse.ArgumentParser()

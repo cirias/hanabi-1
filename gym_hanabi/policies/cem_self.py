@@ -22,9 +22,9 @@ def main(args):
     algo = CEM(
         env=env,
         policy=policy,
-        n_itr=2000,
+        n_itr=1000,
         max_path_length=env.horizon,
-        discount=0.99,
+        discount=1,
         batch_size=4000,
     )
     algo.train()
