@@ -1,39 +1,18 @@
-\section{Evaluation}
-\label{eval}
+\section{Evaluation}\label{sec:eval}
 
-\begin{figure}
-    \includegraphics[width=\columnwidth]{data/bestTRPO/plot.pdf}
-    \caption{}
-    \label{fig:trporesult}
-\end{figure}
+% Give an overview of what we did, and explain what questions we're trying to
+% answer.
 
+\subsection{Hyperparameter Tuning and Algorithm Selection}
+% Show plots of our hyperparameter tuning and discuss which algorithms worked
+% best. Make sure to cite the algorithms and maybe describe them?
 
-Plots:
+\subsection{Self Learning vs Guided Learning}
+% Show 6 histograms for {hanabi, medium hanabi, mini hanabi} x {dynamic self
+% learnt, guided learnt heuristic, guided learnt simple heuristic, static self
+% learnt} annotated with mean, median, stdev, etc. Comment on our findings.
+% Show a histogram for human performance?
 
-Mini
-    TRPO small iters, hyperparam tuning
-        NN size 8x8 -> 256x256 by 2s + more layers
-        step size -> diff fixed + dynamic 
-        %gae lambda
-        batch size -> fix batch size * iter, scale them
-        %policy
-
-
-    Mention other algs
-        -establish that TRPO is the best
-
-TRPO vs heuristics
-
-TRPO many iters
-    mini, medium, regular
-
-
-TRPO mini
-    histogram of scores
-
-vs other bots
-
-TRPO strategy
-
-Human vs Human
-Human vs TRPO
+\subsection{Policy Behavior}
+% Describe the behavior of various policies and show that the self-learnt one
+% behaves differently than the guided learnt one.
