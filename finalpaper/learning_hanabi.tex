@@ -67,22 +67,29 @@ We experimented with three policy optimization algorithms provided in
 \texttt{rllab}:
 
 \begin{itemize}
-    \item Cross-Entropy Method (CEM)~\cite{rubinstein2013cross, policyoptimizationNIPS2016}: This method
-        maintains a population of policies (i.e.\ parameter vectors) and
-        a probability distribution (such as a Gaussian) parameterized by some
-        quantity $\mu$ (i.e.\ the mean). Each iteration, and
-        for each population member, it samples a parameter vector from the
-        probability distribution and executes rollouts (in our case, playing
-        games to completion) using the policy with the sampled parameter vector
-        supplied. The sampled parameter vector and obtained utility are stored.
-        The top $n$ percent of policies with the highest provided utility are
-        used to fit a new parameter $\mu^{t+1}$ for the probability
-        distribution from which policy parameters are sampled. In the CEM case,
-        this fit is performed by maximizing the log probability of obtaining
-        the top $n$ percent of the parameter vectors. The process then repeats
-        for the supplied number of iterations.
+    \item Cross-Entropy Method (CEM)~\cite{rubinstein2013cross,
+        policyoptimizationNIPS2016}: This method maintains a population of
+        policies (i.e.\ parameter vectors) and a probability distribution (such
+        as a Gaussian) parameterized by some quantity $\mu$ (i.e.\ the mean).
+        Each iteration, and for each population member, it samples a parameter
+        vector from the probability distribution and executes rollouts (in our
+        case, playing games to completion) using the policy with the sampled
+        parameter vector supplied. The sampled parameter vector and obtained
+        utility are stored.  The top $n$ percent of policies with the highest
+        provided utility are used to fit a new parameter $\mu^{t+1}$ for the
+        probability distribution from which policy parameters are sampled. In
+        the CEM case, this fit is performed by maximizing the log probability
+        of obtaining the top $n$ percent of the parameter vectors. The process
+        then repeats for the supplied number of iterations.
 
-    \item Covariance Matrix Adaptation Evolutionary Strategy (CMA-ES)~\cite{cmaes, policyoptimizationNIPS2016}: This method is similar to CEM, except that it replaces the distribution with a multivariate Gaussian, and estimates a mean and covariance matrix. This method also attempts to produce a result each iteration that is close to the previous result, as opposed to CEM, which always takes the latest rollout results.
+    \item Covariance Matrix Adaptation Evolutionary Strategy
+        (CMA-ES)~\cite{cmaes, policyoptimizationNIPS2016}: This method is
+        similar to CEM, except that it replaces the distribution with
+        a multivariate Gaussian, and fits to obtain a mean and covariance matrix.
+        This method also attempts to produce a result each iteration that is
+        close to the previous result, as opposed to CEM, which always takes the
+        latest rollout results.
 
-    \item Trust Region Policy Optimization (TRPO)~\cite{TRPO, policyoptimizationNIPS2016}: 
+    \item Trust Region Policy Optimization (TRPO)~\cite{TRPO,
+        policyoptimizationNIPS2016}:
 \end{itemize}
