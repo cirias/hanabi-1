@@ -4,45 +4,123 @@ In this section, we discuss multiple ways to encode Hanabi as an MDP. We then
 discuss how we implement these various models.
 
 \subsection{Space Representations}
-For a player, the state of a Hanabi game includes the number of remaining cards
-in the deck, the number of remaining information tokens, the number of
-remaining fuses, the discarded cards, the played cards, the opponent's hand,
-the information the opponent has received, and the information the player has
-received.
+
+A Hanabi game is parametrized by the maximum number of fuses $F$, and the
+maximum number of information tokens $T$, the number of colors $C$, the maximum
+rank $R$, a list $N$ of length $R$ with the counts for each rank, and the
+maximum number of cards in each player's hand $H$, the number of players $m$.
+For each of these, except the number of players, the state can take any integer
+value from 0 up to the upper bound. In addition to these variables, a player's
+observed state includes the opponent's hand, the information the opponent has
+received, and the information the player has received.
 
 We can encode this state as a collection of nested tuples. Let $[n]$ be the set
 $\set{0, \ldots, n-1}$, and let $A^n$ be the $n$-way Cartesian product $A
 \times_1 A \times_2 \ldots \times_n A$.
-The \emph{nested state space} is \[
-  [31] \times
-  [9] \times
-  [6] \times
-  {[4]}^{25}
+The \emph{nested state space} is 
+\begin{align*}
+    &[(C \times R) + 1] \times
+  [I + 1] \times
+  [F + 1] \times
+  {[\max{N}]}^{C \times R}
   \times
-  {[6]}^5
-  \times {([6] \times [6])}^5
-  \times {([5] \times [5])}^5
-  \times {([6] \times [6])}^5
-\]
+  {[R + 1]}^{C} \times \\
+    &{\bigl([C + 1] \times [R + 1]\bigr)}^{H}
+  \times {\bigl([C + 1] \times [R + 1]\bigr)}^{H}
+  \times {\bigl([C + 1] \times [R + 1]\bigr)}^{H}
+\end{align*}
+
 where a tuple $(n_c, n_t, n_f, d, p, i_p, c_o, i_o)$ in the nested state space
 encodes:
 \begin{itemize}
   \setlength\itemsep{0em}
-  \item $n_c$: the number of remaining cards (from 0 to 30);
-  \item $n_t$: the number of remaining information tokens (from 0 to 8);
-  \item $n_f$: the number of remaining fuses (from 0 to 5);
-  \item $d$: a discard count (from 0 to 3) for each of the 25 cards,
-  \item $p$: the highest played number (from 0 to 5) for each of the 5 colors;
-  \item $i_p$: encoded information for each of the player's 5 cards;
-  \item $c_o$: an encoding of each of the opponent's 5 cards; and
-  \item $i_o$: encoded information for each of the opponent's 5 cards.
+  \item $n_c$: the number of remaining cards (from 0 to $C \times R$);
+  \item $n_t$: the number of remaining information tokens (from 0 to $T$);
+  \item $n_f$: the number of remaining fuses (from 0 to $F$);
+  \item $d$: a discard count (from 0 to $\max{N}$) for each of the $C \times R$
+      cards,
+  \item $p$: the highest played number (from 0 to $R$) for each of the colors
+      from 1 to $C$;
+  \item $i_p$: encoded information for each of the player's $H$ cards, in the
+      order dealt;
+  \item $c_o$: an encoding of each of the opponent's $H$ cards, in the order
+      dealt; and
+  \item $i_o$: encoded information for each of the opponent's $H$ cards, in the
+      order dealt.
 \end{itemize}
-There are 20 total actions---inform about any 5 of the colors, inform about any
-5 of the numbers, play any of the 5 cards in a hand, discard any of the 5 cards
-in a hand---so the \emph{nested action space} is $[20]$.
+Each piece of information is a tuple of color and rank, where each color and
+rank may be unknown. Therefore the state space for a single piece of
+information is $[C + 1] \times [R + 1]$.
 
-\todo{Discuss the flattened space representations.}
-\todo{Compare and contrast the two space representations.}
+There are $C + R + 2H$ total actions---inform about any of the $C$ colors,
+inform about any of the $R$ ranks, play any of the $H$ cards in a hand, discard
+any of the $H$ cards in a hand---so the \emph{nested action space} is $[C + R +
+2H]$.
+
+Note that the observed state does not include $c_p$, the encoding of the
+player's cards, but the complete game state does. We hide this piece of state
+to match normal gameplay, in which a player cannot see his own cards, but can
+track information given for each index.
+
+One implication of this hidden state is that the same action applied to the two
+identical observable states may produce very different outcomes, if the hidden
+states are different. For example, an action to play the player's $k$-th card
+could result in the card being successfully placed, or it could result in a
+fuse being used and a card discarded, depending on the player's hand. The
+randomness of this outcome can only be reduced with the addition of $i_p[k]$, the
+information that the player has about its $k$-th card.
+
+This state representation may also be problematic for training a neural net
+policy. As discussed above, the action of ``playing the $k$-th card'' is
+tightly coupled with the agent's observable state. Such a policy would have to
+learn the relationship between $k$ and $i_p[k]$ and also deal with the
+randomness arising from the hidden $c_p[k]$.
+
+Although we are unable to make actions fully independent of the hidden $c_p$,
+we attempt to facilitate training by designing a state representation in which
+the structure of observable state and actions is more similar. To this end, we
+encode $d$, $p$, $c$, and $i$ and all actions as a vector of length $(C + 1)
+\times (R + 1)$. This vector can be thought of as an index from card color and
+rank to count. For example, in a game where $C = 2$ and $R = 3$, if a user has
+cards with color green and rank 1, green and rank 2, and blue and rank 3, then
+the state can be represented as the vector given in \figref{flattenedstate}.
+
+\begin{figure}[ht]
+    \centering
+    \begin{tabular}{c | c | c | c | c | c | c | c | c | c | c | c}
+        (B, 1) & (B, 2) & (B, 3) & (B, ?) & (G, 1) & (G, 2) & (G, 3) & (G, ?) & (?, 1) & (?, 2) & (?, 3) & (?, ?) \\\hline
+        0 & 0 & 1 & 0 & 1 & 1 & 0 & 0 & 0 & 0 & 0 & 0
+    \end{tabular}
+    \caption{Hanabi state representation for a hand with two green cards with
+    rank 1 and one blue card with rank 3.}
+    \label{fig:flattenedstate}
+\end{figure}
+
+The advantage of such a state representation is that it can represent both
+known and unknown cards. For example, a player's information vector is always
+initialized $[0, \dots, 0, H]$, which represents that the player knows nothing
+about any of its $H$ cards, since the last position's index is $(?, ?)$. If,
+for example, the above player then receives information about its two green
+cards, it will decrement the $(?, ?)$ position to 1, and increment the $(G, ?)$
+position to 2. In this way, any unordered set of cards or information can be
+encoded in this vector format.
+
+Actions are then encoded similarly. Giving information is the same as in the
+above state representation. For playing and discarding a card, rather than
+being an index into the player's cards, each action is an information vector
+index.  The game engine then applies this action to the hidden state by finding
+any card in the player's hand that matches the action.  For example, if $(G,
+?)$ is the action for a hidden hand given by \figref{flattenedstate}, the game
+engine will play either green card that we have, regardless of rank.
+
+Thus, the advantage of this is that the set of played cards, the set of
+discarded cards, all players' hands, and all players' information all share the
+same representation. This also allows us to completely ignore the order of a
+player's cards. We hope that this will facilitate learning. One disadvantage
+over the previous state representation is that we may sometimes lose
+information that is encoded by the card ordering in normal gameplay. For
+example, as we are dealt new cards, we may forget that the information we have
+is only associated with the old cards and does not include the new one.
 
 \subsection{Reward Functions}
 The \emph{constant reward function} returns a reward of $1$ every time a card
