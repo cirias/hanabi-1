@@ -51,6 +51,15 @@ sweep_self() {
             "pickled_policies/${name}.pickle" \
             "logs/$name"
     done
+
+    readonly spaces=("" FlattenedSpace)
+    for space in "${spaces[@]}"; do
+        name="mini_trpo_${space}_self"
+        python trpo_self.py \
+            MiniHanabi${space}Self-v0 \
+            "pickled_policies/${name}.pickle" \
+            "logs/$name" --n_itr=1
+    done
 }
 
 main() {
