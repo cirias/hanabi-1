@@ -15,17 +15,15 @@ two 2's, one 3), six information tokens, and two fuses.
 
 \subsection{Hyperparameter Tuning and Algorithm Selection}
 We consider three reinforcement learning algorithms: TRPO, CEM, and CMA-ES. In
-order to compare the four algorithms fairly, we first tuned the hyperparameters
+order to compare the three algorithms fairly, we first tune the hyperparameters
 of each algorithm. For example, \figref{trpo-tuning} shows the average reward
-of a TRPO policy against the number of training iterations for various values
-of hyperparameters.
-\todo{Add space representation as a hyperparameter.}
+of a dynamically self-learned mini Hanabi TRPO policy against the number of
+training iterations for various values of hyperparameters.
 
 We then trained a self-learned mini Hanabi policy using each algorithm for 1000
 training iterations. Histograms of the policies' scores on 1000 games of mini
 Hanabi are shown in \figref{algos}.
 \todo{Comment on algorithms.}
-\todo{Replace with real data.}
 
 \begin{figure}[ht]
   \newcommand{\hyperparamsubfig}[3]{%
@@ -44,11 +42,13 @@ Hanabi are shown in \figref{algos}.
 
   \hyperparamsubfig{step_size}{step size}{}
   \hyperparamsubfig{reward}{reward function}{}
+  \hyperparamsubfig{space}{state space}{}
 
   \caption{
     Hyperparameter tuning for TRPO trained mini Hanabi policies. The default
     values for each hyperparameter (if not being varied) are as follows: hidden
-    sizes=$(16, 16)$, discount=$1$, step size=$0.01$, reward function=constant.
+    sizes=$(16, 16)$, discount=$1$, step size=$0.01$, reward function=constant,
+    space=nested.
   }\label{fig:trpo-tuning}
 \end{figure}
 
