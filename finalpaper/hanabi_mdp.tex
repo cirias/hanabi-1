@@ -1,25 +1,47 @@
 \section{Hanabi as a Markov Decision Procedure [Michael+Stephanie]}\label{sec:hanabimdp}
 
-In this section, we discuss multiple ways to model Hanabi as an Markov decision
-process. We also discuss how we implement these various models as OpenAI gym
-environments.
+In this section, we discuss multiple ways to encode Hanabi as an MDP. We then
+discuss how we implement these various models.
 
-\subsection{Space Representations}
-% Discuss our two space representations, their strengths, and their weaknesses.
+\subsection{Space Representations [Stephanie]}
+\todo{Discuss our two space representations, their strengths, and their
+weaknesses.}
 
-\subsection{Reward Functions}
-% Discuss our various reward functions.
+\subsection{Reward Functions [Michael]}
+The \emph{constant reward function} returns a reward of $1$ every time a card
+is played. This reward function has the nice property that the total reward
+accumulated throughout a game is equal to the final score of the game. Thus, a
+policy which maximizes the constant reward function maximizes its final score.
+
+The constant reward function assigns equal reward to all cards. Non-constant
+reward functions assign higher reward to higher numbered cards. The
+\emph{linear reward function}, \emph{squared reward function}, and \emph{skewed
+reward function} return a reward of $n$, $n^2$ and $10^{n-1}$ whenever a card
+with number $n$ is played. These non-constant functions encourage policies to
+play higher-valued cards which ideally forces the policies to perform long-term
+planning rather than myopically playing low-numbered cards.
+
+Not all moves in Hanabi are legal. For example, it is illegal for a player to
+give information when there are no information tokens remaining. To discourage
+illegal moves, we assign a negative reward to any illegal move such that the
+total reward for the game sums to 0.
+
+% constant reward
+% penalty
+% linear
+% squared
+% skewed
 
 \subsection{Implementation}
 OpenAI gym is a Python reinforcement learning library which implements a
-standard set of reinforcement learning challenges against which researchers can
-evaluate their reinforcement learning algorithms~\cite{brockman2016openai}. For
-example, OpenAI gym provides implementations of classic reinforcement learning
-problems, board games, and Atari games. These implementations follow a common
-\emph{environment interface} which specifies the observation space, action
-space, transition function, and reward function of an MDP. We have implemented
-Hanabi as an OpenAI gym environment which supports all of state representations
-and reward functions described above.
+standard set of reinforcement learning environments against which researchers
+can evaluate their reinforcement learning algorithms~\cite{brockman2016openai}.
+For example, OpenAI gym provides implementations of classic reinforcement
+learning problems, board games, and Atari games. These implementations follow a
+common \emph{environment interface} which specifies the observation space,
+action space, transition function, and reward function of an MDP. We have
+implemented Hanabi as an OpenAI gym environment which supports all of state
+representations and reward functions described above.
 
 % TODO: Maybe we should link to our code here?
 % TODO: Maybe shorten this subsection a bit?

@@ -29,15 +29,16 @@
 \newcommand{\secref}[1]{Section~\label{sec:#1}}
 \newcommand{\tabref}[1]{Table~\label{tab:#1}}
 
+\newcommand{\todo}[1]{\textcolor{red}{\Large TODO: #1}}
 \newcommand{\reals}{\mathbb{R}}
 
 \begin{document}
 \maketitle
+\todo{Try to get author names on a single line.}
 
 {\input{abstract}}
 {\input{introduction}}
 {\input{background}}
-% {\input{approach}}
 {\input{hanabi_mdp}}
 {\input{learning_hanabi}}
 {\input{eval}}
