@@ -14,11 +14,17 @@ third, \emph{mini Hanabi}, is Hanabi with three colors, three numbers (two 1's,
 two 2's, one 3), six information tokens, and two fuses.
 
 \subsection{Hyperparameter Tuning and Algorithm Selection}
-We trained four self-learned mini Hanabi policies using TRPO, VPG, CEM, and
-CMA-ES. In order to compare the four algorithms fairly, we first tuned the
-hyperparameters of each algorithm. For example, \figref{trpo-tuning} shows the
-average reward of a TRPO policy against the number of training iterations for
-various values of hyperparameters.
+We consider three reinforcement learning algorithms: TRPO, CEM, and CMA-ES. In
+order to compare the four algorithms fairly, we first tuned the hyperparameters
+of each algorithm. For example, \figref{trpo-tuning} shows the average reward
+of a TRPO policy against the number of training iterations for various values
+of hyperparameters.
+
+We then trained a self-learned mini Hanabi policy using each algorithm for 1000
+training iterations. Histograms of the policies' scores on 1000 games of mini
+Hanabi are shown in \figref{algos}.
+\todo{Comment on algorithms.}
+\todo{Replace with real data.}
 
 \begin{figure}[ht]
   \newcommand{\hyperparamsubfig}[3]{%
@@ -45,7 +51,21 @@ various values of hyperparameters.
   }\label{fig:trpo-tuning}
 \end{figure}
 
-% TODO: Show histograms for each algorithm along with summary statistics.
+\begin{figure}[ht]
+  \newcommand{\algosubfig}[3]{%
+    \begin{subfigure}[b]{0.32\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{data/algos/#1.pdf}
+      \caption{#2}\label{fig:#3}
+    \end{subfigure}
+  }
+
+  \centering
+  \algosubfig{CEM}{CEM}{cem}
+  \algosubfig{CMA-ES}{CMA-ES}{cmaes}
+  \algosubfig{TRPO}{TRPO}{trpo}
+  \caption{Mini Hanabi scores on 1000 mini Hanabi games.}\label{fig:algos}
+\end{figure}
 
 \subsection{Self Learning vs Guided Learning}
 \todo{Write.}
