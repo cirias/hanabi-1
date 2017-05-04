@@ -30,7 +30,7 @@ def main(args):
 
     baseline = LinearFeatureBaseline(env_spec=env.spec)
 
-    for _ in range(args.n_repeats):
+    for i in range(args.n_repeats):
         algo = TRPO(
             env=env,
             policy=policy,
@@ -43,7 +43,11 @@ def main(args):
             gae_lambda=args.gae_lambda,
         )
         algo.train()
-        env.env.unwrapped.ai_policy = policy.clone(policy)
+        if i == args.n_repeats - 1:
+            # On the last iteration, we train on ourselves.
+            env.env.unwrapped.ai_policy = policy
+        else:
+            env.env.unwrapped.ai_policy = policy.clone(policy)
     with open(args.output_policy, "wb") as f:
         pickle.dump(policy, f)
 
