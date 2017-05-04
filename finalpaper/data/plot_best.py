@@ -23,7 +23,9 @@ def hist(name, bins, learning, filename):
     plt.ylabel("Frequency")
     plt.title("TRPO {} {} policy\nmean={}, stddev={:0.4}"
               .format(learning, name, mean, stddev))
-    plt.savefig("{}_{}.pdf".format(name, learning.replace(" ", "_")), bbox_inches="tight")
+    plt.savefig("{}_{}.pdf".format(name.replace(" ", "_"),
+                                   learning.replace(" ", "_")),
+                                   bbox_inches="tight")
     plt.close()
 
 def main():
