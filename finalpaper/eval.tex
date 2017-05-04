@@ -94,33 +94,35 @@ We conduct the rest of our experiments with TRPO.
 
   \centering
 
-  \begin{tabular}{|c|c|c|c|}
-    \cline{2-4}
-    \multicolumn{1}{c}{} &
-    \multicolumn{1}{|c|}{\textbf{Mini Hanabi}} &
-    \textbf{Medium Hanabi} &
-    \textbf{Hanabi} \\\hline
-    %
-    \rotatebox[origin=l]{90}{\textbf{Dynamic Self-Learning}} &
-    \bestsubfig{mini_Hanabi_dynamic_self-learned} &
-    \bestsubfig{medium_Hanabi_dynamic_self-learned} &
-    \bestsubfig{Hanabi_dynamic_self-learned} \\\hline
-    %
-    \rotatebox[origin=l]{90}{\textbf{Guided-Learning}} &
-    \bestsubfig{mini_Hanabi_guided-learned} &
-    \bestsubfig{medium_Hanabi_guided-learned} &
-    \bestsubfig{Hanabi_guided-learned} \\\hline
-    %
-    \rotatebox[origin=l]{90}{\textbf{Static Self-Learning}} &
-    \bestsubfig{mini_Hanabi_static_self-learned} &
-    \bestsubfig{medium_Hanabi_static_self-learned} &
-    \bestsubfig{Hanabi_static_self-learned} \\\hline
-    %
-    \rotatebox[origin=l]{90}{\textbf{Heuristic}} &
-    \bestsubfig{mini_Hanabi_heuristic} &
-    \bestsubfig{medium_Hanabi_heuristic} &
-    \bestsubfig{Hanabi_heuristic} \\\hline
-  \end{tabular}
+  \makebox[\textwidth][c]{%
+    \begin{tabular}{|c|c|c|c|}
+      \cline{2-4}
+      \multicolumn{1}{c}{} &
+      \multicolumn{1}{|c|}{\textbf{Mini Hanabi}} &
+      \textbf{Medium Hanabi} &
+      \textbf{Hanabi} \\\hline
+      %
+      \rotatebox[origin=l]{90}{\textbf{Dynamic Self-Learning}} &
+      \bestsubfig{mini_Hanabi_dynamic_self-learned} &
+      \bestsubfig{medium_Hanabi_dynamic_self-learned} &
+      \bestsubfig{Hanabi_dynamic_self-learned} \\\hline
+      %
+      \rotatebox[origin=l]{90}{\textbf{Guided-Learning}} &
+      \bestsubfig{mini_Hanabi_guided-learned} &
+      \bestsubfig{medium_Hanabi_guided-learned} &
+      \bestsubfig{Hanabi_guided-learned} \\\hline
+      %
+      \rotatebox[origin=l]{90}{\textbf{Static Self-Learning}} &
+      \bestsubfig{mini_Hanabi_static_self-learned} &
+      \bestsubfig{medium_Hanabi_static_self-learned} &
+      \bestsubfig{Hanabi_static_self-learned} \\\hline
+      %
+      \rotatebox[origin=l]{90}{\textbf{Heuristic}} &
+      \bestsubfig{mini_Hanabi_heuristic} &
+      \bestsubfig{medium_Hanabi_heuristic} &
+      \bestsubfig{Hanabi_heuristic} \\\hline
+    \end{tabular}
+  }
 
   \caption{}\label{fig:best}
 \end{figure}
