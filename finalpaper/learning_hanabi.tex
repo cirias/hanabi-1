@@ -63,18 +63,25 @@ the two costs one point in two player mini-hanabi.
 
 
 \subsection{Algorithms}
-\todo{Write.}
-% Describe the algorithms we use (with citations). Mention rllab.
-%
-%
-\subsubsection{Trust Region Policy Optimization (TRPO)}
-\cite{TRPO}
-\subsubsection{CEM}
-\subsubsection{Covariance Matrix Adaptation Evolution Stretegy (CMA-ES)}
-~\cite{cmaes}
+We experimented with three policy optimization algorithms provided in
+\texttt{rllab}:
 
+\begin{itemize}
+    \item Cross-Entropy Method (CEM)~\cite{rubinstein2013cross}: This method
+        maintains a population of policies (i.e.\ parameter vectors) and
+        a probability distribution parameterized by some quantity $\mu$ (such
+        as the mean of a Gaussian). Each iteration, and for each population
+        member, it samples a parameter vector from the probability distribution
+        and executes rollouts (in our case, playing games to completion) using
+        the policy with the sampled parameter vector supplied. The sampled
+        parameter vector and obtained utility are stored. The top $n$ percent
+        of policies with the highest provided utility are used to fit a new
+        parameter $\mu^{t+1}$ for the probability distribution from which policy
+        parameters are sampled. In the CEM case, this fit is performed by
+        maximizing the log probability of obtaining the top $n$ percent of the
+        parameter vectors. The process then repeats for the supplied number of
+        iterations.
 
-
-%\subsubsection{VPG (if space)}
-
-
+    \item Covariance Matrix Adaptation Evolution Strategy (CMA-ES)~\cite{cmaes}: This method is similar to CEM, except that it replaces the maximization of summed log probaiblities in the fitting stage with a multivariate gaussian.
+    \item Trust Region Policy Optimization (TRPO)~\cite{TRPO}: 
+\end{itemize}
