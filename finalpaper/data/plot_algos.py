@@ -28,9 +28,9 @@ def plot_algo(name, filename):
 
 def main():
     algos = [
-        ("CEM", "TBD"),
-        ("CMA-ES", "TBD"),
-        ("TRPO", "TBD"),
+        ("CEM", "sweep2/mini_cem_self.txt"),
+        ("CMA-ES", "sweep2/mini_cma_es_self.txt"),
+        ("TRPO", "sweep2/mini_trpo_self.txt"),
     ]
 
     for name, filename in algos:
