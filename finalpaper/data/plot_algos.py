@@ -17,7 +17,8 @@ def plot_algo(name, filename):
     stddev = np.std(scores)
 
     plt.figure()
-    plt.hist(data[:,2].astype(np.int))
+    plt.hist(data[:,2].astype(np.int), edgecolor="black", align="left", bins=range(11))
+    plt.xticks(range(10))
     plt.xlabel("Score")
     plt.ylabel("Frequency")
     plt.title("{} self-learned mini Hanabi policy\nmean={}, stddev={:0.4}"
