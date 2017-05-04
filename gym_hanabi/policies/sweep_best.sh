@@ -9,7 +9,7 @@ copyresult() {
 }
 
 main() {
-    N_ITR=8000
+    N_ITR=2000
     N_REPEATS=16
     N_SIMS=1000
 
