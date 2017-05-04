@@ -23,7 +23,7 @@ def plot_sweep(name, vals, filenames):
     plt.figure()
     for val, filename in zip(vals, filenames):
         xs, ys = read_tabular_csv(filename)
-        plt.plot(xs, ys, linewidth=3, label="{}={}".format(name, val))
+        plt.plot(xs, ys, linewidth=2, label="{}={}".format(name, val))
     plt.xlabel("Iteration")
     plt.ylabel("Average Reward")
     plt.title("Average Reward vs.\nNumber of Training Iterations")
