@@ -1,0 +1,59 @@
+# Overview
+[slide titled "Playing Hanabi with Reinforcement Learning"]
+
+For our final project, we used reinforcement learning to play the card game Hanabi.
+
+# Hanabi
+[video of two people playing hanabi]
+
+Hanabi is a two-player cooperative card game.
+
+[video of person fanning out a hanabi deck]
+
+A hanabi deck contains a bunch of cards with a number and a color.
+
+Each player is dealt five cards. They can see the other player's cards
+
+[show a hand being held from behind]
+
+but they can't see their own.
+
+[show a pile of played cards]
+
+The goal of the game is to build a stack of cards, one for each color. We get
+one point for each card that's played.
+
+[show a person holding the deck]
+
+The game proceeds in turns. Each turn, a player can do one of three things.
+
+[show card being played]
+
+They can play a card and draw a new card,
+
+[show card being discarded]
+
+they can discard a card and draw a new card,
+
+[show person pointing out cards in other player's hand]
+
+or they can give information about a number or color in their opponent's hand.
+
+[show last card of deck being drawn]
+
+The game proceeds until the deck runs out of cards,
+
+[show last 5 being played]
+
+all the cards are played,
+
+[show information tokens and fuses]
+
+or a couple other things happen, but those aren't important to understand.
+
+[show people playing Hanabi]
+
+The key take away is that the game is cooperative and people don't have
+complete information of the game.
+
+# Reinforcement Learning
