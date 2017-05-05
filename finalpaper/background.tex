@@ -19,8 +19,8 @@ in their hand. A player can either point out all of the cards of a given number
 (e.g. ``these three cards are 2's'') or point out all of the cards of a given
 color (e.g. ``these two cards are red''). When a player gives information, one
 of eight \emph{information tokens} is used. Information can only be given if
-there are information tokens remaining. Players may also discard a card to gain
-one information token.
+there are information tokens remaining. Players may also discard a card to
+re-gain one information token.
 
 The game ends either when all fuses are used up, all cards are played (a
 perfect game), or when the deck is empty and all players have played one
@@ -34,7 +34,7 @@ information tokens, fuses, and hand size. We discuss this further in
 two-player Hanabi.
 
 \subsection{Markov Decision Processes}\label{sec:background:mdp}
-Markov decision processes (MDPs) are stochastic state machine~\cite{mdp}. Given
+Markov decision processes (MDPs) are stochastic state machines~\cite{mdp}. Given
 a state and an action, the next state is chosen based on some probability
 distribution. Each state transition is also associated with some immediate
 reward.
