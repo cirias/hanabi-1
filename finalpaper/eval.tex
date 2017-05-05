@@ -2,23 +2,27 @@
 
 We trained multiple reinforcement learning algorithms on multiple variants of
 Hanabi using dynamic self-learning, guided-learning, and static self-learning.
-In this section, we answer questions about how well a learned policy can play
-Hanabi, about how self-learning differs from guided-learning, and about how
-learned policies qualitatively play Hanabi.
+In this section, we answer questions about how state space representation
+affects policy performance, about how well a learned policy can play Hanabi,
+about how self-learning differs from guided-learning.
 
 \subsection{Hanabi Variants}
-We consider three variants of Hanabi. The first, which we call \emph{Hanabi},
-is a standard game of Hanabi. The second, \emph{medium Hanabi}, is Hanabi with
+We trained policies for three variants of Hanabi. The first, \emph{Hanabi}, is
+a standard game of Hanabi. The second, \emph{medium Hanabi}, is Hanabi with
 only four colors and four numbers (three 1's, two 2's, two 3's, one 4). The
 third, \emph{mini Hanabi}, is Hanabi with three colors, three numbers (two 1's,
 two 2's, one 3), six information tokens, and two fuses.
 
 \subsection{Hyperparameter Tuning and Algorithm Selection}
-We consider three reinforcement learning algorithms: TRPO, CEM, and CMA-ES. In
-order to compare the three algorithms fairly, we first tune the hyperparameters
-of each algorithm. For example, \figref{trpo-tuning} shows the average reward
-of a TRPO dynamically self-learned mini Hanabi policy against the number of
-training iterations for various values of hyperparameters.
+We trained policies with three reinforcement learning algorithms: TRPO, CEM,
+and CMA-ES. In order to compare the three algorithms fairly, we first tuned the
+hyperparameters of each algorithm. For example, \figref{trpo-tuning} shows the
+average reward of a TRPO dynamically self-learned mini Hanabi policy against
+the number of training iterations for various values of hyperparameters.
+
+\figref{trpo-tuning} shows that neural network architecture and discount factor
+have little effect on performance, while batch size, step size, and state space
+do.
 
 \begin{figure}[ht]
   \newcommand{\hyperparamsubfig}[3]{%
@@ -47,22 +51,22 @@ training iterations for various values of hyperparameters.
   }\label{fig:trpo-tuning}
 \end{figure}
 
-We then train a dynamically self-learned mini Hanabi policy using each
-algorithm for 1000 training iterations. Histograms of the policies' scores on
-1000 games of mini Hanabi are shown in \figref{algos}.
+We then trained a dynamically self-learned mini Hanabi policy using each
+tuned algorithm for 1000 training iterations. Histograms of the policies'
+scores on 1000 games of mini Hanabi are shown in \figref{algos}.
 
-The CMA-ES performs very poorly with an average score of 1.757.  It performs
-only marginally better than a completely random policy which obtains an average
-score of 1.56.
+The CMA-ES performed very poorly with an average score of 1.757. It performed
+only marginally better than a completely random policy which obtained an
+average score of 1.56.
 %
-The CEM policy performs slightly better (but still poorly) with an average
+The CEM policy performed slightly better (but still poorly) with an average
 score of 2.215.
 %
-The TRPO policy performs significantly better than either of the other two
-policies. Most games result in a score of 8, and a significant number of games
-result in a perfect score.
+The TRPO policy performed significantly better than either of the other two
+policies. Most games resulted in a score of 8, and a significant number of
+games resulted in a perfect score.
 %
-We conduct the rest of our experiments with TRPO.
+Based on these results, we conducted the rest of our experiments with TRPO.
 
 \begin{figure}[ht]
   \newcommand{\algosubfig}[3]{%
@@ -81,24 +85,27 @@ We conduct the rest of our experiments with TRPO.
 \end{figure}
 
 \subsection{Self Learning vs Guided Learning}
-We train a TRPO policy for 2000 iterations using dynamic self-learning, guided
-learning, and fixed self-learning for mini Hanabi, medium Hanabi, and Hanabi.
-We then play each policy against itself on 1000 games and plot a histogram of
-the scores in \figref{best}. For comparison, we also show the scores for our
-heuristic when played against itself.
+We trained a TRPO policy for 2000 iterations using dynamic self-learning,
+guided learning, and fixed self-learning for mini Hanabi, medium Hanabi, and
+Hanabi. We then played each policy against itself for 1000 games. A histogram
+of the policies' scores is given in \figref{best}. For comparison, we also show
+the scores for our heuristic when played against itself. Note that our
+heuristic performed comparably or better than existing heuristic-based policies
+on Hanabi~\cite{osawa2015solving,walton2017evaluating}
 
-For mini Hanabi, all three learned policies outperform the hand-written
-heuristic. Moreover, both self-learned policies outperform the guided-learned
+For mini Hanabi, all three learned policies outperformed the hand-written
+heuristic. Moreover, both self-learned policies outperformed the guided-learned
 policy. This confirms our hypothesis that performance of a guided-learned
 policy is bounded by the performance of the heuristic against which it is
-trained.  Moreover, the dynamic self-learned policy achieves a significant
-number of perfect scores and averages 74\% of a perfect score.
+trained. Also note that the 2000-iteration dynamic self-learned policy performs
+worse than the 1000-iteration policy presented in \figref{algos} illustrating
+the inherent randomness in TRPO.
 
-For medium Hanabi and Hanabi, all three learned policies perform worse than the
-heuristic. We conjecture that the larger state space of medium Hanabi and
+For medium Hanabi and Hanabi, all three learned policies performed worse than
+the heuristic. We conjecture that the larger state space of medium Hanabi and
 Hanabi require more training time to achieve comparable performance to the
 policies trained on mini Hanabi which has a considerably smaller state space.
-Moreover, both self-learned policies perform worse than the guided-learned
+Moreover, both self-learned policies performed worse than the guided-learned
 policy which confirms our hypothesis that guided-learned policies can more
 quickly improve while self-learned policies initially struggle to improve. We
 are confident that given enough training time, the learned policies would
