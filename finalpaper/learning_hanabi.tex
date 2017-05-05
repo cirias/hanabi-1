@@ -39,28 +39,29 @@ approach is not limited by a hand-written policy and avoids rapidly changing
 the environment.
 
 \subsection{Heuristics}
-\todo{Write.}
 % Describe the two heuristics we used to play the game: simple and more
 % complex.
 
-The SimpleHeuristic player attempts to mimic the strategy that our best
-TRPO-trained-on-itself player learns for mini-hanabi. Each turn, it tries the
-following, prioritizing lower numbered cards first:
+\subsubsection{Complex Heuristic}
+\todo{Complex Heuristic}
 
-\begin{itemize}
+\subsubsection{Simple Heuristic}
+
+\todo{can save time by moving this to the learned policy section?  - Sagar}
+
+The SimpleHeuristic player attempts to mimic the strategy that our best
+TRPO-trained-on-itself player learns for mini-hanabi.
+Each turn, it iterates over the card numbers, starting at one and tries the following:
+
+\begin{itemize}[leftmargin=*]
 \item Give info about cards of the given number if there are any that the other player does not know about
 \item If a card of the given number is already played for each color, discard any card of that number that we know about in our hand
 \item Play a card of the given number.
 \end{itemize}
 
-If none of these conditions are satisfied, for example if the other player
-knows the number for each of their cards and the heuristic player knows
-nothing about their own cards, the player tries to play the zeroeth card in
+If none of these conditions are satisfied, the player tries to play the zeroeth card in
 its hand. We avoid discarding as much as possible, since every discard after
-the two costs one point in two player mini-hanabi.
-
-
-
+the first two costs one point in two-player mini-hanabi.
 
 \subsection{Algorithms}
 We experimented with three policy optimization algorithms provided in
