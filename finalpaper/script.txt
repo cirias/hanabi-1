@@ -88,13 +88,13 @@ interesting for a couple of reasons.
 
 [slide showing hanabi with an arrow to a vector]
 
-First, we have to formalize the game of Hanabi as an MDP. This involves
-specifying something called a state space and action space. Essentially, we
-have to encode the state of a game of Hanabi and any move in Hanabi as a vector
-of numbers similar to how in supervised learning, we encode objects into
-feature vectors. This is challenging because of Hanabi's inherent partial
-information. It's difficult to design an action space in which actions mean the
-same thing regardless of the current state. See the paper for details.
+First, we have to formalize the game of Hanabi as an Markov decision process.
+This involves specifying something called a state space and action space.
+Essentially, we have to encode the state of a game of Hanabi and any move in
+Hanabi as a vector of numbers similar to how in supervised learning, we encode
+objects into feature vectors. This is challenging because of Hanabi's inherent
+partial information. It's difficult to design an action space in which actions
+mean the same thing regardless of the current state. See the paper for details.
 
 [Michael]
 
@@ -119,6 +119,18 @@ In the third method, called static self-learning, the policy iteratively trains
 on fixed snapshots of itself.
 
 # Results
-[Show OpenAI gym]
+[Slide titled "results"]
+
 We trained Hanabi bots using these three learning methods on three variants of
-Hanabi using three algorithms provided by OpenAI's rllab library. Analyze data...
+Hanabi using three algorithms provided by OpenAI's rllab library.
+
+[Show mini Hanabi histogram]
+
+On a scaled down variant of Hanabi with a max score of 9, we achieved a perfect
+score 9% of the time and averaged 77% of a perfect score.
+
+[Show Michael playing with Shewchuk bot]
+
+Please refer to our paper for more details on our MDP encoding, various
+learning methods, hyperparameter tuning and algorithm selection, and overall
+bot performance.
