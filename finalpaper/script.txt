@@ -62,7 +62,7 @@ complete information of the game.
 # Reinforcement Learning
 [show slide titled reinforcement learning]
 
-Reinforcement learning is a branch of machine learning takes in a specification
+Reinforcement learning is a branch of machine learning that takes in a specification
 of a game
 
 [show go]
@@ -91,7 +91,7 @@ interesting for a couple of reasons.
 First, we have to formalize the game of Hanabi as an MDP. This involves
 specifying something called a state space and action space. Essentially, we
 have to encode the state of a game of Hanabi and any move in Hanabi as a vector
-of numbers sorta like how in supervised learning, we encode objects into
+of numbers similar to how in supervised learning, we encode objects into
 feature vectors. This is challenging because of Hanabi's inherent partial
 information. It's difficult to design an action space in which actions mean the
 same thing regardless of the current state. See the paper for details.
@@ -99,7 +99,7 @@ same thing regardless of the current state. See the paper for details.
 [Michael]
 
 Second, the off-the-shelf reinforcement learning algorithms we use are designed
-for single-player games, but Hanabi is a two-player game? We describe three
+for single-player games, but Hanabi is a two-player game. We describe three
 ways to use these single-player algorithms to learn to play a two-player game.
 For the sake of exposition, assume Michael here is a policy being learned.
 
