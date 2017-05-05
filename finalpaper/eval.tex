@@ -72,9 +72,9 @@ We then trained a dynamically self-learned mini Hanabi policy using each
 tuned algorithm for 1000 training iterations. Histograms of the policies'
 scores on 1000 games of mini Hanabi are shown in \figref{algos}.
 
-The CMA-ES performed very poorly with an average score of 1.757. It performed
-only marginally better than a completely random policy which obtained an
-average score of 1.56.
+The CMA-ES policy performed very poorly with an average score of 1.757. It
+performed only marginally better than a completely random policy which obtained
+an average score of 1.56.
 %
 The CEM policy performed slightly better (but still poorly) with an average
 score of 2.215.
@@ -87,20 +87,20 @@ Based on these results, we conducted the rest of our experiments with TRPO.
 
 \subsection{Self Learning vs Guided Learning}
 We trained a TRPO policy for 2000 iterations using dynamic self-learning,
-guided learning, and fixed self-learning for mini Hanabi, medium Hanabi, and
+guided learning, and static self-learning for mini Hanabi, medium Hanabi, and
 Hanabi. We then played each policy against itself for 1000 games. A histogram
 of the policies' scores is given in \figref{best}. For comparison, we also show
 the scores for our heuristic when played against itself. Note that our
-heuristic performed comparably or better than existing heuristic-based policies
-on Hanabi~\cite{osawa2015solving,walton2017evaluating}
+heuristic performed comparably or better than existing heuristic-based
+policies~\cite{osawa2015solving,walton2017evaluating}
 
 For mini Hanabi, all three learned policies outperformed the hand-written
 heuristic. Moreover, both self-learned policies outperformed the guided-learned
 policy. This confirms our hypothesis that performance of a guided-learned
 policy is bounded by the performance of the heuristic against which it is
 trained. Also note that the 2000-iteration dynamic self-learned policy performs
-worse than the 1000-iteration policy presented in \figref{algos} illustrating
-the inherent randomness in TRPO.
+worse than the 1000-iteration policy presented in \figref{algos}; this
+illustrates the inherent randomness in TRPO.
 
 For medium Hanabi and Hanabi, all three learned policies performed worse than
 the heuristic. We conjecture that the larger state space of medium Hanabi and
@@ -151,5 +151,5 @@ outperform the heuristic-based policy.
     \end{tabular}
   }
 
-  \caption{}\label{fig:best}
+  \caption{Hanabi policies.}\label{fig:best}
 \end{figure}

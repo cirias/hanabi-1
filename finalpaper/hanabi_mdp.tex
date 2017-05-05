@@ -59,10 +59,10 @@ any of the $H$ cards in a hand---so the \emph{nested action space} is $[C + R +
 
 Note that the observed state does not include $c_p$, the encoding of the
 player's cards, but the complete game state does. We hide this piece of state
-to match normal gameplay, in which a player cannot see his own cards, but can
+to match normal gameplay, in which a player cannot see their own cards, but can
 track information given for each index.
 
-One implication of this hidden state is that the same action applied to the two
+One implication of this hidden state is that the same action applied to two
 identical observable states may produce very different outcomes, if the hidden
 states are different. For example, an action to play the player's $k$-th card
 could result in the card being successfully placed, or it could result in a
@@ -82,8 +82,8 @@ in which the structure of observable state and actions is more similar. To this
 end, we encode $d$, $p$, $c$, and $i$ and all actions as a vector of length $(C
 + 1) \times (R + 1)$. This vector can be thought of as an index from card color
 and rank to count. For example, in a game where $C = 2$ and $R = 3$, if a
-player has a blue 3, a green 1, and a green 2 but only knows they a blue 3,
-then the state can be represented as the vector given in
+player has a blue 3, a green 1, and a green 2 but only knows they have a blue
+3, then the state can be represented as the vector given in
 \figref{flattenedstate}.
 
 \begin{figure}[ht]
@@ -108,16 +108,16 @@ Actions are encoded similarly. Giving information is the same as in the above
 state representation. For playing and discarding a card, rather than being an
 index into the player's cards, each action is an information vector index.  The
 game engine then applies this action to the hidden state by finding any card in
-the player's hand that matches the action.  For example, if $G?$ is the action
+the player's hand that matches the action.  For example, if $??$ is the action
 for a hidden hand given by \figref{flattenedstate}, the game engine will play
 either green card that we have, regardless of rank.
 
 The advantage of this is that the set of played cards, the set of
 discarded cards, all players' hands, and all players' information all share the
 same representation. This also allows us to completely ignore the order of a
-player's cards. We hope that this will facilitate learning. One disadvantage
-over the previous state representation is that we may sometimes lose
-information that is encoded by the card ordering in normal gameplay. For
+player's cards. We hope that this will facilitate learning. However, one
+disadvantage over the previous state representation is that we may sometimes
+lose information that is encoded by the card ordering in normal gameplay. For
 example, as we are dealt new cards, we may forget that the information we have
 is only associated with the old cards and does not include the new one.
 
@@ -127,13 +127,14 @@ is played. This reward function has the nice property that the total reward
 accumulated throughout a game is equal to the final score of the game. Thus, a
 policy which maximizes the constant reward function maximizes its final score.
 
-The constant reward function assigns equal reward to all cards. Non-constant
-reward functions assign higher reward to higher numbered cards. The
-\emph{linear reward function}, \emph{squared reward function}, and \emph{skewed
-reward function} return a reward of $n$, $n^2$ and $10^{n-1}$ whenever a card
-with number $n$ is played. These non-constant functions encourage policies to
-play higher-valued cards which ideally forces the policies to perform long-term
-planning rather than myopically playing low-numbered cards.
+While the constant reward function assigns equal reward to all cards,
+non-constant reward functions assign higher reward to higher numbered cards.
+The \emph{linear reward function}, \emph{squared reward function}, and
+\emph{skewed reward function} return a reward of $n$, $n^2$ and $10^{n-1}$
+whenever a card with number $n$ is played. These non-constant functions
+encourage policies to play higher-valued cards which ideally forces the
+policies to perform long-term planning rather than myopically playing
+low-numbered cards.
 
 Not all moves in Hanabi are legal. For example, it is illegal for a player to
 give information when there are no information tokens remaining. To discourage
