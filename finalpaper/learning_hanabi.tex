@@ -39,19 +39,27 @@ approach is not limited by a hand-written policy and avoids rapidly changing
 the environment.
 
 \subsection{Heuristics}
-% Describe the two heuristics we used to play the game: simple and more
-% complex.
 
-\subsubsection{Complex Heuristic}
-\todo{Complex Heuristic}
+In this section we describe the two heuristics that we use for guided learning,
+\texttt{ComplexHeuristic} and \texttt{SimpleHeuristic}.
 
-\subsubsection{Simple Heuristic}
+\subsubsection{\texttt{ComplexHeuristic}}
+
+The \texttt{ComplexHeuristic} player mimics a human's strategy for mini-Hanabi. On each
+turn, the player computes cards that can be played based on rank information
+and the highest ranks of played so far. The player computes a card that it will
+discard, if necessary; this is the card for which it has the least information.
+Finally, the player computes useful information based on what cards it thinks
+the other player will play or discard. This may include cards that are
+playable, cards that will result in a fuse if played, etc.
+
+\subsubsection{\texttt{SimpleHeuristic}}
 
 \todo{can save time by moving this to the learned policy section?  - Sagar}
 
-The SimpleHeuristic player mimics the strategy that our best
-TRPO-trained-on-itself player learns for mini-hanabi.
-Each turn, it iterates over the card numbers, starting at one and tries the following:
+The \texttt{SimpleHeuristic} player mimics the strategy that our best
+TRPO-trained-on-itself player learns for mini-hanabi.  Each turn, it iterates
+over the card numbers, starting at one and tries the following:
 
 \begin{itemize}[leftmargin=*]
 \item Give info about cards of the given number if there are any that the other player does not know about
