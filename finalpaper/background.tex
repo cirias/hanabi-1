@@ -1,80 +1,44 @@
-\section{Background}
-\label{sec:background}
+\section{Background}\label{sec:background}
 
-\subsection{Hanabi}
-\label{sec:background:hanabi}
+\subsection{Hanabi}\label{sec:background:hanabi}
+A Hanabi deck consists of cards labelled with one of five numbers and one of
+five colors. For each of the five colors, the deck contains three 1's, two 2's,
+two 3's, two 4's, and one 5.  Each player begins the game by drawing five cards
+into their hand. Unlike most card games however, players \emph{cannot} see
+their own cards, but they \emph{can} see all other players' cards.
 
-Hanabi \cite{hanabiboardgame, hanabiwiki} is a cooperative card game in which
-two or more players act on partial information towards a common goal. The
-card deck consists of cards labelled with a number, color pair. In regular
-Hanabi, there are five possible colors and five possible numbers, one to five.
-Unlike a traditional card deck, the deck contains duplicates of certain cards;
-as shown in the final row of Figure~\ref{fig:hanabisizes}, a regular Hanabi
-deck contains three cards numbered one, two cards numbered two, and so on, for
-each of the five colors. Each player begins the game with a hand containing
-five cards. Unlike most card games however, players \emph{cannot} see their
-own cards, but \emph{can} see all other player's cards.
+The collective goal of the game is to build five stacks of cards where each
+stack contains cards of a certain color. For each colored stack, a 1 must be
+played first, followed by a 2, then a 3, and so on. If a player elects to play
+a card that cannot be played---for example, a blue 3 when there is already a
+blue 3 that has been played---one of four \emph{fuses} is used up. If the group
+runs out of these fuses, the game ends.
 
-The collective goal of the game is to play cards on the table such that a stack
-is completed for each color with numbers 1 to 5. Per color, cards must be
-played in a strictly-increasing-by-one order. That is, for any particular
-color, a one can be played only when no cards of that color have already been
-played, a two can only be played when only a one of that color has been played,
-and so on.  If a player elects to play a card that cannot be played - for
-example a blue three when there is already a blue three that has been played
-- one of four ``fuses'' is used up. If the group runs out of these fuses, the
-game ends.
+In addition to playing cards, players can inform other players about the cards
+in their hand. A player can either point out all of the cards of a given number
+(e.g. ``these three cards are 2's'') or point out all of the cards of a given
+color (e.g. ``these two cards are red''). When a player gives information, one
+of eight \emph{information tokens} is used. Information can only be given if
+there are information tokens remaining. Players may also discard a card to gain
+one information token.
 
-In addition to playing cards, players can inform other players about cards
-in their hand. An inform move involves one player providing one other player
-with information about their hand. This information can contain either number
-of color information, but not both. Furthermore, this information must be complete;
-the player must tell the other player about all cards of the particular number or
-color they are informing about. When a player makes an inform move, one info
-token is used. In regular Hanabi, the group begins with eight info tokens.
+The game ends either when all fuses are used up, all cards are played (a
+perfect game), or when the deck is empty and all players have played one
+additional move after the last card was drawn. The final score is the number of
+played cards.
 
-The final type of move that a player may move is to discard a card. When a card
-is discarded, one info token is returned to the group.
+In addition to the standard version of Hanabi described here, Hanabi can also
+be adjusted to different sizes by changing the number of colors, numbers,
+information tokens, fuses, and hand size. We discuss this further in
+\secref{eval:hanabivariants}.  Furthermore, in this work, we focus on
+two-player Hanabi.
 
-The game ends either when all fuses are used up, all cards are played (a perfect
-game), or when the deck is empty and all players have played one additional
-move after the last card was drawn. The final score can be computed by summing
-the top value on each stack, with a higher score being more desireable. In addition
-to the regular version described here, Hanabi can also be adjusted to different
-sizes by changing the number of colors, numbers, information tokens, fuses, and
-hand size. Figure~\ref{fig:hanabisizes} shows 3 sizes of hanabi that we use in
-our experiments. Furthermore, in this work we focus on two-player Hanabi.
+\subsection{Markov Decision Processes}\label{sec:background:mdp}
+Markov decision processes (MDPs) are stochastic state machine~\cite{mdp}. Given
+a state and an action, the next state is chosen based on some probability
+distribution. Each state transition is also associated with some immediate
+reward.
 
-\begin{figure}[ht]
-    \centering
-    \begin{tabular}{|c | c | c | c | c | c | c |} \hline
-        Name        & Colors & 1s, 2s ... 5s  & Info Tokens & Fuses & Hand Size \\ \hline
-        Mini        & 3      & [2, 2, 1, 0, 0]    & 6           & 3     & 3 \\ \hline
-        Medium      & 4      & [3, 2, 2, 1, 0] & 8           & 4     & 4 \\ \hline
-        Regular     & 5      & [3, 2, 2, 2, 1] & 8 & 4 & 5 \\ \hline
-    \end{tabular}
-    \caption{Hanabi Game Sizes}
-    \label{fig:hanabisizes}
-\end{figure}
-
-
-% Things to talk about:
-% TODO, maybe: -game difficult vs size/number of cards that must be played
-% -human results here?
-
-
-
-\subsection{Markov Decision Processes}
-\label{sec:background:mdp}
-
-Markov decision processes (MDPs) are a class of problems that can be formulated
-as a stochastic state machine~\cite{mdp}. Each state transition is partly
-random and partly determined by an action chosen. More specifically, given a
-state and an action, the next state is given by a probability distribution,
-which introduces randomness. Each state transition is also associated with some
-immediate reward.
-
-% Formalize MDPs.
 Formally, we model an environment as an \emph{Markov decision process} (MDP)
 which is a four-tuple $(S, A, P, R)$ where
 \begin{itemize}
@@ -92,26 +56,13 @@ which is a four-tuple $(S, A, P, R)$ where
     $R: S \times A \to \reals$ is a \emph{reward function}.
 \end{itemize}
 
-The goal in MDPs is to learn a policy $pi : S \to A$ that decides which action
-to take in a given state to maximize the expected reward, as specified by $R$.
-A game like Hanabi is well-suited to this framework, since, to an agent who can
-only see the other player's cards, an action such as playing a card will have
-some probability of gaining a Hanabi point.
+The goal in MDPs is to learn a policy $\pi : S \to A$ that decides which action
+to take in a given state in order to maximize the expected reward, as specified
+by $R$.
 
-There are several well-studied methods for solving MDPs [CITE]. One natural fit
-would be to frame Hanabi as a partially observable MDP [CITE], since as
-described in \secref{background:hanabi}, an agent can only observe partial
-state. However, such problems been proven to be computation intractable [CITE].
-
-Reinforcement learning is another family of methods that can be used to solve
-MDPs in which the underlying probability distribution is unknown [CITE]. This
-is a branch of machine learning distinct from supervised learning and
-unsupervised learning. While supervised learning algorithms take in labeled
-data and output a classifier and unsupervised learning algorithms take in
-unlabeled data and output something like a clustering or dimensionality
-reduction, reinforcement learning algorithms take in a specification of an
-interactive \emph{environment} and output a \emph{policy} that can optimally
-interact with the environment. For example, given a specification of the board
-game Go or a specification of an Atari 2600, reinforcement learning can be used
-to generate a policy to play Go or a policy to play Atari 2600
-games~\cite{silver2016mastering,mnih2015human}.
+Reinforcement learning is a branch of machine learning distinct from supervised
+learning and unsupervised learning. Reinforcement learning includes a family of
+methods that can be used to solve MDPs in which the underlying probability
+distribution is unknown~\cite{sutton1998reinforcement}.  Reinforcement learning
+has been used to play a wide variety of interactive games including
+Go~\cite{silver2016mastering} and Atari 2600 video games~\cite{mnih2015human}.

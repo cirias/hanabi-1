@@ -1,69 +1,38 @@
-\section{Introduction}
-\label{sec:intro}
+\section{Introduction}\label{sec:intro}
 
 In this paper, we present a case study on the feasibility of using machine
 learning to perform a cooperative task in which the combined agents have
 complete information, but each individual agent has only partial information.
-We train an AI to learn to play Hanabi~\cite{hanabiboardgame}, a cooperative
-card game in which each player can see everyone else's cards, but not his own.
+We train an AI to learn to play Hanabi: a cooperative card game in which each
+player can see everyone else's cards, but not their own~\cite{hanabiboardgame,
+hanabiwiki}.
 
 The cooperative aspect of Hanabi differentiates it from traditional card games,
 in which adversaries have inverse objectives. In Hanabi, the basic moves
 include playing a card, which may return some points for the group, or giving
 information to another agent, which may enable them to play a card on a later
 move. This means that points can often only be gained through a cooperative
-strategy. In certain cases, for example, it may be more advantageous for an
-agent to perform an action that will allow another agent to make progress,
-rather than the agent attempting to make progress on its own. We discuss Hanabi
-gameplay and strategy in more detail in \secref{background:hanabi}.
+strategy. We discuss Hanabi gameplay and strategy in more detail in
+\secref{background:hanabi}.
 
-A natural fit for learning to play Hanabi is to frame Hanabi gameplay as a
-Markov decision process (MDP) [CITE]. MDPs are useful for solving problems that
-can be encoded as a state machine, in which each state transition is partly
-stochastic and partly influenced by the agent's \emph{action}. Once this state
-machine has been encoded, various algorithms~\cite{TRPO} can be used to solve
-the MDP to produce a \emph{policy} that decides actions given certain state to
-return a maximal \emph{reward}. We discuss MDPs and the methods for solving
-such problems in \secref{background:mdp}.
+A natural fit for learning to play Hanabi is to frame Hanabi as a Markov
+decision process (MDP)~\cite{mdp}. MDPs model problems that can be encoded as a
+state machine, in which each state transition is partly stochastic and partly
+influenced by an agent's action. There are various \emph{reinforcement learning
+algorithms}~\cite{rubinstein2013cross, policyoptimizationNIPS2016, cmaes, TRPO}
+that can solve an MDP to produce a \emph{policy} that decides what action to
+take in a given state in order to obtain the biggest \emph{reward}. We discuss
+MDPs and reinforcement learning in \secref{background:mdp}.
 
 The primary challenge is then to encode Hanabi as an MDP. In
 \secref{hanabimdp}, we explore various methods of representing state and reward
 to facilitate learning. Representing state properly is challenging because each
 agent has only partial information about the entire game state, so some actions
-may be directly dependent on some unobserved state. We also adjust the reward
-function to match the Hanabi point system and to train an AI that can learn the
-rules of gameplay.
+may be directly dependent on some unobserved state.
 
-Using these Hanabi encodings, we then apply reinforcement learning, a family of
-algorithms that can be used to solve MDPs with unknown probabilities, to train
-a policy that can play Hanabi. In \secref{learninghanabi}, we discuss the
-methods used to train a Hanabi AI, the results of which we present in
-\secref{eval}.
-
-In summary, we present a methodology to encode and learn cooperative tasks in
-which each individual agent has partial information, with Hanabi as a case
-study. We produce a policy that can achieve an average score of \todo{fill out
-numbers}.
-
-% Give a basic Hanabi description here. Then talk about general applicability
-% of cooperative AI.
-
-% Proposal Intro
-% ==============
-%
-% Using machine learning to play adversarial games is a well-studied topic. We
-% believe that using machine learning to play a cooperative game will bring
-% about new questions. In Hanabi, for example, the emphasis on cooperation
-% means that it’s advantageous for all players to agree on certain protocols
-% beforehand. One question that we’d like to answer in this project is whether,
-% given a human player that is already following a certain protocol, an AI can
-% be automatically taught to follow the same protocol.
-
-% Another question is whether it’s possible to simultaneously train multiple
-% models. The most obvious way to train a model may be to simulate games played
-% with an initial, hardcoded policy, which has deterministic behavior and can
-% therefore act as part of the environment. We believe this will work well for
-% a two-player game, but is unlikely to scale to more players, when more
-% coordination is needed. As part of this project, we would also like to
-% explore the effect of simultaneously training two or more models, possibly
-% with one hard-coded player.
+Using these Hanabi encodings, we then apply reinforcement learning to train
+policies that can play multiple variants of Hanabi. In \secref{learninghanabi},
+we discuss the methods used to train the Hanabi AIs, the results of which we
+present in \secref{eval}.  On a reduced variant of Hanabi, our best policy
+achieves a perfect score on 9\% of the games it plays and achieves an average
+score of 77\%.

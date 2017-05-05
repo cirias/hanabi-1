@@ -6,12 +6,13 @@ In this section, we answer questions about how state space representation
 affects policy performance, about how well a learned policy can play Hanabi,
 about how self-learning differs from guided-learning.
 
-\subsection{Hanabi Variants}
+\subsection{Hanabi Variants}\label{sec:eval:hanabivariants}
 We trained policies for three variants of Hanabi. The first, \emph{Hanabi}, is
 a standard game of Hanabi. The second, \emph{medium Hanabi}, is Hanabi with
-only four colors and four numbers (three 1's, two 2's, two 3's, one 4). The
-third, \emph{mini Hanabi}, is Hanabi with three colors, three numbers (two 1's,
-two 2's, one 3), six information tokens, and two fuses.
+only four colors, four numbers (three 1's, two 2's, two 3's, one 4), and four
+cards in a hand. The third, \emph{mini Hanabi}, is Hanabi with three colors,
+three numbers (two 1's, two 2's, one 3), three cards in a hand, and six
+information tokens, and two fuses.
 
 \subsection{Hyperparameter Tuning and Algorithm Selection}
 We trained policies with three reinforcement learning algorithms: TRPO, CEM,

@@ -75,33 +75,30 @@ the first two costs one point in two-player mini-hanabi.
 We experimented with three policy optimization algorithms provided in
 \texttt{rllab}. Below, we briefly describe these algorithms:
 
-\begin{itemize}
-    \item Cross-Entropy Method (CEM)~\cite{rubinstein2013cross,
-        policyoptimizationNIPS2016}: This method maintains a population of
-        policies (i.e.\ parameter vectors) and a probability distribution (such
-        as a Gaussian) with some distribution parameter.  Each iteration, it
-        samples parameter vectors from the distribution and executes rollouts
-        using the sampled policy, storing the obtained utility.  The top $n$
-        percent of policies with the highest provided utility are used to fit
-        a new distribution parameter for the next timestep. In the CEM case,
-        this fit is performed by maximizing the log probability of obtaining
-        the top $n$ percent of the parameter vectors. The process then repeats
-        for the supplied number of iterations. This essentially optimizes by 
-        treating the utility as a black box.
+\paragraph{Cross-Entropy Method (CEM)~\cite{rubinstein2013cross,
+policyoptimizationNIPS2016}}
+This method maintains a population of policies (i.e.\ parameter vectors) and a
+probability distribution (such as a Gaussian) with some distribution parameter.
+Each iteration, it samples parameter vectors from the distribution and executes
+rollouts using the sampled policy, storing the obtained utility.  The top $n$
+percent of policies with the highest provided utility are used to fit a new
+distribution parameter for the next timestep. In the CEM case, this fit is
+performed by maximizing the log probability of obtaining the top $n$ percent of
+the parameter vectors. The process then repeats for the supplied number of
+iterations. This essentially optimizes by treating the utility as a black box.
 
-    \item Covariance Matrix Adaptation Evolutionary Strategy
-        (CMA-ES)~\cite{cmaes, policyoptimizationNIPS2016}: This method is
-        similar to CEM, except that it replaces the distribution with
-        a multivariate Gaussian, and fits to obtain a mean and covariance matrix.
-        This method also attempts to produce a result each iteration that is
-        close to the previous result, as opposed to CEM, which always takes the
-        latest rollout results.
+\paragraph{Covariance Matrix Adaptation Evolutionary Strategy
+(CMA-ES)~\cite{cmaes, policyoptimizationNIPS2016}}:
+This method is similar to CEM, except that it replaces the distribution with a
+multivariate Gaussian, and fits to obtain a mean and covariance matrix.  This
+method also attempts to produce a result each iteration that is close to the
+previous result, as opposed to CEM, which always takes the latest rollout
+results.
 
-    \item Trust Region Policy Optimization (TRPO)~\cite{TRPO,
-        policyoptimizationNIPS2016}: This method iteratively optimizes policies
-        in a similar fashion as natural policy gradient methods. It optimizes
-        a surrogate function that approximates the expected return of a policy.
-        In contrast to the previous methods, TRPO is better-suited for
-        optimizing large numbers of parameters, such as those for neural
-        network based policies.
-\end{itemize}
+\paragraph{Trust Region Policy Optimization (TRPO)~\cite{TRPO,
+policyoptimizationNIPS2016}}
+This method iteratively optimizes policies in a similar fashion as natural
+policy gradient methods. It optimizes a surrogate function that approximates
+the expected return of a policy.  In contrast to the previous methods, TRPO is
+better-suited for optimizing large numbers of parameters, such as those for
+neural network based policies.
