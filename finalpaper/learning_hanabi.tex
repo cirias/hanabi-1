@@ -1,7 +1,7 @@
 \section{Learning to Play Hanabi}\label{sec:learninghanabi}
 
-In this section, we describe how to apply the TRPO, CEM, and CMA-ES
-reinforcement learning algorithms to a Hanabi MDP.
+In this section, we describe how to apply specific reinforcement learning
+algorithms and training methods to solve a Hanabi MDP.
 
 \subsection{Learning Methods}
 The reinforcement learning algorithms we consider begin with a random policy
@@ -38,38 +38,17 @@ policy and uses it to train the policy for the next $k$ iterations. This
 approach is not limited by a hand-written policy and avoids rapidly changing
 the environment.
 
-\subsection{Heuristics}
+\subsection{Heuristic}
 
-In this section we describe the two heuristics that we use for guided learning,
-\texttt{ComplexHeuristic} and \texttt{SimpleHeuristic}.
-
-\subsubsection{\texttt{ComplexHeuristic}}
-
-The \texttt{ComplexHeuristic} player mimics a human's strategy for mini-Hanabi. On each
-turn, the player computes cards that can be played based on rank information
-and the highest ranks of played so far. The player computes a card that it will
-discard, if necessary; this is the card for which it has the least information.
-Finally, the player computes useful information based on what cards it thinks
-the other player will play or discard. This may include cards that are
-playable, cards that will result in a fuse if played, etc.
-
-\subsubsection{\texttt{SimpleHeuristic}}
-
-\todo{can save time by moving this to the learned policy section?  - Sagar}
-
-The \texttt{SimpleHeuristic} player mimics the strategy that our best
-TRPO-trained-on-itself player learns for mini-hanabi.  Each turn, it iterates
-over the card numbers, starting at one and tries the following:
-
-\begin{itemize}[leftmargin=*]
-\item Give info about cards of the given number if there are any that the other player does not know about
-\item If a card of the given number is already played for each color, discard any card of that number that we know about in our hand
-\item Play a card of the given number.
-\end{itemize}
-
-If none of these conditions are satisfied, the player tries to play the zeroeth card in
-its hand. We avoid discarding as much as possible, since every discard after
-the first two costs one point in two-player mini-hanabi.
+In this section we describe the heuristic that we use for guided learning.  The
+heuristic player mimics a human's strategy for mini-Hanabi. On each turn, the
+player computes cards that can be played based on rank information and the
+highest ranks of played so far. The player computes which card it will discard,
+if necessary; this is the card for which it has the least information.
+Finally, the player computes useful information to give to the other player
+based on what cards it thinks the other player will play or discard. This may
+include cards that are playable, cards that will result in a fuse if played,
+etc.
 
 \subsection{Algorithms}
 We experimented with three policy optimization algorithms provided in
