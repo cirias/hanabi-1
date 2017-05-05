@@ -1,7 +1,8 @@
 # Overview
 [slide titled "Playing Hanabi with Reinforcement Learning"]
 
-For our final project, we used reinforcement learning to play the card game Hanabi.
+For our final project, we used reinforcement learning to play the card game
+Hanabi.
 
 # Hanabi
 [video of two people playing hanabi]
@@ -11,6 +12,8 @@ Hanabi is a two-player cooperative card game.
 [video of person fanning out a hanabi deck]
 
 A hanabi deck contains a bunch of cards with a number and a color.
+
+[show a hand being held from the front]
 
 Each player is dealt five cards. They can see the other player's cards
 
@@ -57,3 +60,65 @@ The key take away is that the game is cooperative and people don't have
 complete information of the game.
 
 # Reinforcement Learning
+[show slide titled reinforcement learning]
+
+Reinforcement learning is a branch of machine learning takes in a specification
+of a game
+
+[show go]
+
+like go
+
+[show pong]
+
+or pong
+
+[show a cartpole simulation]
+
+or a fun game of balance the stick. Reinforcement learning algorithms output
+these things called policies that are essentially bots that can optimally play
+the game. Here, we see an algorithm learning a policy that can balance the
+stick.
+
+# Reinforcement Learning + Hanabi
+[show slide of reinforcement learning + hanabi]
+
+We used reinforcement learning to make a Hanabi playing bot which is
+interesting for a couple of reasons.
+
+[slide showing hanabi with an arrow to a vector]
+
+First, we have to formalize the game of Hanabi as an MDP. This involves
+specifying something called a state space and action space. Essentially, we
+have to encode the state of a game of Hanabi and any move in Hanabi as a vector
+of numbers sorta like how in supervised learning, we encode objects into
+feature vectors. This is challenging because of Hanabi's inherent partial
+information. It's difficult to design an action space in which actions mean the
+same thing regardless of the current state. See the paper for details.
+
+[Michael]
+
+Second, the off-the-shelf reinforcement learning algorithms we use are designed
+for single-player games, but Hanabi is a two-player game? We describe three
+ways to use these single-player algorithms to learn to play a two-player game.
+For the sake of exposition, assume Michael here is a policy being learned.
+
+[Michael playing someone else]
+
+In the first method, called guided learning, we code a Hanabi bot by hand. Then
+we train a policy against the bot.
+
+[Michael playing against himself]
+
+In the second method, called dynamic self-learning, the same policy is used for
+both players. This is kind of like playing yourself.
+
+[Camera tricks to make it seem like there's two Michaels]
+
+In the third method, called static self-learning, the policy iteratively trains
+on fixed snapshots of itself.
+
+# Results
+[Show OpenAI gym]
+We trained Hanabi bots using these three learning methods on three variants of
+Hanabi using three algorithms provided by OpenAI's rllab library. Analyze data...
