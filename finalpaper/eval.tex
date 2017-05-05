@@ -81,8 +81,28 @@ We conduct the rest of our experiments with TRPO.
 \end{figure}
 
 \subsection{Self Learning vs Guided Learning}
-\todo{Generate real data.}
-\todo{Comment on findings.}
+We train a TRPO policy for 2000 iterations using dynamic self-learning, guided
+learning, and fixed self-learning for mini Hanabi, medium Hanabi, and Hanabi.
+We then play each policy against itself on 1000 games and plot a histogram of
+the scores in \figref{best}. For comparison, we also show the scores for our
+heuristic when played against itself.
+
+For mini Hanabi, all three learned policies outperform the hand-written
+heuristic. Moreover, both self-learned policies outperform the guided-learned
+policy. This confirms our hypothesis that performance of a guided-learned
+policy is bounded by the performance of the heuristic against which it is
+trained.  Moreover, the dynamic self-learned policy achieves a significant
+number of perfect scores and averages 74\% of a perfect score.
+
+For medium Hanabi and Hanabi, all three learned policies perform worse than the
+heuristic. We conjecture that the larger state space of medium Hanabi and
+Hanabi require more training time to achieve comparable performance to the
+policies trained on mini Hanabi which has a considerably smaller state space.
+Moreover, both self-learned policies perform worse than the guided-learned
+policy which confirms our hypothesis that guided-learned policies can more
+quickly improve while self-learned policies initially struggle to improve. We
+are confident that given enough training time, the learned policies would
+outperform the heuristic-based policy.
 
 \begin{figure}[ht]
   \newcommand{\bestsubfig}[1]{%
@@ -126,8 +146,3 @@ We conduct the rest of our experiments with TRPO.
 
   \caption{}\label{fig:best}
 \end{figure}
-
-\subsection{Policy Behavior}
-\todo{Write.}
-% Describe the behavior of various policies and show that the self-learnt one
-% behaves differently than the guided learnt one.
