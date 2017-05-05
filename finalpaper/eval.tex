@@ -52,6 +52,22 @@ do.
   }\label{fig:trpo-tuning}
 \end{figure}
 
+\begin{figure}[ht]
+  \newcommand{\algosubfig}[3]{%
+    \begin{subfigure}[b]{0.32\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{data/sweep2/#1.pdf}
+      \caption{#2}\label{fig:#3}
+    \end{subfigure}
+  }
+
+  \centering
+  \algosubfig{CMA-ES}{CMA-ES}{cmaes}
+  \algosubfig{CEM}{CEM}{cem}
+  \algosubfig{TRPO}{TRPO}{trpo}
+  \caption{Mini Hanabi scores on 1000 mini Hanabi games.}\label{fig:algos}
+\end{figure}
+
 We then trained a dynamically self-learned mini Hanabi policy using each
 tuned algorithm for 1000 training iterations. Histograms of the policies'
 scores on 1000 games of mini Hanabi are shown in \figref{algos}.
@@ -68,22 +84,6 @@ policies. Most games resulted in a score of 8, and a significant number of
 games resulted in a perfect score.
 %
 Based on these results, we conducted the rest of our experiments with TRPO.
-
-\begin{figure}[ht]
-  \newcommand{\algosubfig}[3]{%
-    \begin{subfigure}[b]{0.32\textwidth}
-      \centering
-      \includegraphics[width=\textwidth]{data/sweep2/#1.pdf}
-      \caption{#2}\label{fig:#3}
-    \end{subfigure}
-  }
-
-  \centering
-  \algosubfig{CMA-ES}{CMA-ES}{cmaes}
-  \algosubfig{CEM}{CEM}{cem}
-  \algosubfig{TRPO}{TRPO}{trpo}
-  \caption{Mini Hanabi scores on 1000 mini Hanabi games.}\label{fig:algos}
-\end{figure}
 
 \subsection{Self Learning vs Guided Learning}
 We trained a TRPO policy for 2000 iterations using dynamic self-learning,
@@ -114,7 +114,7 @@ outperform the heuristic-based policy.
 
 \begin{figure}[ht]
   \newcommand{\bestsubfig}[1]{%
-    \begin{subfigure}[b]{0.32\textwidth}
+    \begin{subfigure}[b]{0.25\textwidth}
       \centering
       \includegraphics[width=\textwidth]{data/sweep_best/#1.pdf}
     \end{subfigure}
@@ -123,31 +123,30 @@ outperform the heuristic-based policy.
   \centering
 
   \makebox[\textwidth][c]{%
-    \begin{tabular}{|c|c|c|c|}
-      \cline{2-4}
+    \begin{tabular}{|c|c|c|c|c|}
+      \cline{2-5}
       \multicolumn{1}{c}{} &
-      \multicolumn{1}{|c|}{\textbf{Mini Hanabi}} &
-      \textbf{Medium Hanabi} &
-      \textbf{Hanabi} \\\hline
+      \multicolumn{1}{|c|}{\textbf{Dynamic Self-Learning}} &
+      \textbf{Guided Learning} &
+      \textbf{Static Self-Learning} &
+      \textbf{Heuristic} \\\hline
       %
-      \rotatebox[origin=l]{90}{\textbf{Dynamic Self-Learning}} &
+      \rotatebox[origin=l]{90}{\textbf{Mini Hanabi}} &
       \bestsubfig{mini_Hanabi_dynamic_self-learned} &
-      \bestsubfig{medium_Hanabi_dynamic_self-learned} &
-      \bestsubfig{Hanabi_dynamic_self-learned} \\\hline
-      %
-      \rotatebox[origin=l]{90}{\textbf{Guided-Learning}} &
       \bestsubfig{mini_Hanabi_guided-learned} &
-      \bestsubfig{medium_Hanabi_guided-learned} &
-      \bestsubfig{Hanabi_guided-learned} \\\hline
-      %
-      \rotatebox[origin=l]{90}{\textbf{Static Self-Learning}} &
       \bestsubfig{mini_Hanabi_static_self-learned} &
-      \bestsubfig{medium_Hanabi_static_self-learned} &
-      \bestsubfig{Hanabi_static_self-learned} \\\hline
+      \bestsubfig{mini_Hanabi_heuristic} \\\hline
       %
-      \rotatebox[origin=l]{90}{\textbf{Heuristic}} &
-      \bestsubfig{mini_Hanabi_heuristic} &
-      \bestsubfig{medium_Hanabi_heuristic} &
+      \rotatebox[origin=l]{90}{\textbf{Medium Hanabi}} &
+      \bestsubfig{medium_Hanabi_dynamic_self-learned} &
+      \bestsubfig{medium_Hanabi_guided-learned} &
+      \bestsubfig{medium_Hanabi_static_self-learned} &
+      \bestsubfig{medium_Hanabi_heuristic} \\\hline
+      %
+      \rotatebox[origin=l]{90}{\textbf{Hanabi}} &
+      \bestsubfig{Hanabi_dynamic_self-learned} &
+      \bestsubfig{Hanabi_guided-learned} &
+      \bestsubfig{Hanabi_static_self-learned} &
       \bestsubfig{Hanabi_heuristic} \\\hline
     \end{tabular}
   }
