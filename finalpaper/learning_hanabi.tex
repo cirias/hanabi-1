@@ -62,7 +62,7 @@ probability distribution (such as a Gaussian) with some distribution parameter.
 Each iteration, it samples parameter vectors from the distribution and executes
 rollouts using the sampled policy, storing the obtained utility.  The top $n$
 percent of policies with the highest provided utility are used to fit a new
-distribution parameter for the next timestep. In the CEM case, this fit is
+distribution parameter for the next time-step. In the CEM case, this fit is
 performed by maximizing the log probability of obtaining the top $n$ percent of
 the parameter vectors. The process then repeats for the supplied number of
 iterations. This essentially optimizes by treating the utility as a black box.
